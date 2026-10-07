@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2871960845593547850}
   - component: {fileID: 920817744584305285}
   - component: {fileID: 6196140078263340835}
-  - component: {fileID: 2356766439811955398}
   m_Layer: 0
   m_Name: body
   m_TagString: Untagged
@@ -91,27 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &2356766439811955398
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 992880099824129149}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1391243816724805055
 GameObject:
   m_ObjectHideFlags: 0
@@ -123,7 +101,6 @@ GameObject:
   - component: {fileID: 4306774760418576837}
   - component: {fileID: 7850171997729440571}
   - component: {fileID: 1791804834357700607}
-  - component: {fileID: 391696273824015906}
   m_Layer: 0
   m_Name: handle
   m_TagString: Untagged
@@ -203,27 +180,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &391696273824015906
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1391243816724805055}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3822388368388205028
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,7 +226,6 @@ GameObject:
   - component: {fileID: 267739102541628093}
   - component: {fileID: 3651638818220269471}
   - component: {fileID: 5340310100843026538}
-  - component: {fileID: 5479434740053509604}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -351,27 +306,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5479434740053509604
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6111023391418560485}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6434187890406985905
 GameObject:
   m_ObjectHideFlags: 0
@@ -564,6 +498,8 @@ GameObject:
   - component: {fileID: 1045234064317662756}
   - component: {fileID: 2876431597633421168}
   - component: {fileID: 5063773488729185545}
+  - component: {fileID: 8428764420425565898}
+  - component: {fileID: 6918108273942144436}
   m_Layer: 0
   m_Name: player
   m_TagString: Player
@@ -647,15 +583,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3365b3d7c2b3e624f8b576c747dfac59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
+  information: {fileID: 8428764420425565898}
   baseMoveSpeed: 2
   maxMoveSpeed: 50
+  boostSpeed: 80
+  boostStartSpeed: 45
+  boostTime: 3
+  boostCoolTime: 10
   acceleration: 5
   deceleration: 1
   rotateSpeed: 80
   airRotateSpeedX: 240
   airRotateSpeedY: 240
+  toleranceAngleX: 45
+  toleranceAngleY: 45
   groundCheckDistance: 3
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
   isGrounded: 1
+--- !u!114 &8428764420425565898
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7637779348410140323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3c4c70e31a82c47b1626f2637e138c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInformation
+  haveMoney: 0
+  viewership: 0
+  trickIncreaseViewership: 100
+--- !u!114 &6918108273942144436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7637779348410140323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39b789eee255090479f220ef5c94f805, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCollisionCallback

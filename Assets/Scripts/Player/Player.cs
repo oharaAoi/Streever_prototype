@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class Player : MonoBehaviour {
 
+	[SerializeField]
+	private PlayerInformation information;
+
 	// 基本速度
 	[SerializeField]
 	private float baseMoveSpeed = 5;
@@ -84,6 +87,9 @@ public class Player : MonoBehaviour {
 	private float totalAngleX = 0.0f;
 	private float totalAngleY = 0.0f;
 
+	private int trickCountX = 0;
+	private int trickCountY = 0;
+
 	private float boostTimer = 0;
 	private float boostCoolTimer = 0;
 
@@ -119,14 +125,12 @@ public class Player : MonoBehaviour {
 
 			// 前フレームにトリックアクションをしていたら成功判定を行う
 			if (!prevIsGrounded) {
-				bool success = IsTrickSuccessful();
-
-				if (success) {
-					Debug.Log("ジャンプ成功 !!");
-				} else {
-					Debug.Log("ジャンプ失敗 !!");
-				}
+				// 成功時は視聴者を増やす / 失敗したら減らす
+				information.TrickViewer(IsTrickSuccessful(), trickCountX + 1, trickCountY + 1);
 			}
+
+			trickCountX = 0;
+			trickCountY = 0;
 
 		} else {
 			isGrounded = false;
@@ -287,11 +291,11 @@ public class Player : MonoBehaviour {
 	// 何回転したかを取得する
 	private void RotateCount() {
 		if (!isGrounded) {
-			int rotateCountX = Mathf.FloorToInt(Mathf.Abs(totalAngleX) / 360.0f);
-			int rotateCountY = Mathf.FloorToInt(Mathf.Abs(totalAngleY) / 360.0f);
+			trickCountX = Mathf.FloorToInt(Mathf.Abs(totalAngleX) / 360.0f);
+			trickCountY = Mathf.FloorToInt(Mathf.Abs(totalAngleY) / 360.0f);
 
-			//Debug.Log(rotateCountX);
-			//Debug.Log(rotateCountY);
+			Debug.Log(trickCountX);
+			Debug.Log(trickCountY);
 		}
 	}
 
