@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BuildingGenerator : MonoBehaviour
@@ -26,12 +27,23 @@ public class BuildingGenerator : MonoBehaviour
     [Range(0.5f, 1.2f)]
     public float roadScale = 0.8f;
 
-    [ContextMenu("Generate Buildings")]
+	[Header("配達先の設定")]
+	[SerializeField]
+	private GameObject deliveryAddress;
+
+	[SerializeField]
+	[Min(0)]
+	private int deliveryAddressCount = 5;
+
+	private readonly List<GameObject> buildings = new();
+	private readonly List<DeliveryAddress> activeAddresses = new();
+
+	[ContextMenu("Generate Buildings")]
     public void GenerateBuildings()
     {
         ClearBuildings();
 
-        for (int x = 0; x < countX; x++)
+		for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
             {
@@ -82,7 +94,7 @@ public class BuildingGenerator : MonoBehaviour
                 GameObject building =
                     GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-                building.name = $"Building_{x}_{z}";
+				building.name = $"Building_{x}_{z}";
 
                 building.transform.SetParent(transform);
 
@@ -99,9 +111,17 @@ public class BuildingGenerator : MonoBehaviour
                         height,
                         depth
                     );
-            }
+
+				// リストに追加
+				buildings.Add(building);
+			}
         }
-    }
+
+
+		for (int i = 0; i < deliveryAddressCount; i++) {
+			SpawnDeliveryAddress();
+		}
+	}
 
     [ContextMenu("Clear Buildings")]
     public void ClearBuildings()
@@ -113,4 +133,72 @@ public class BuildingGenerator : MonoBehaviour
             );
         }
     }
+
+	// 配達先を1個生成
+	public void SpawnDeliveryAddress() {
+		if (deliveryAddress == null || buildings.Count == 0)
+			return;
+
+		// 現在配達先が配置されていないビルを取得
+		List<GameObject> candidates = new();
+
+		foreach (GameObject building in buildings) {
+			if (building == null)
+				continue;
+
+			bool hasAddress = false;
+
+			foreach (DeliveryAddress address in activeAddresses) {
+				if (address != null &&
+					address.transform.parent == building.transform) {
+					hasAddress = true;
+					break;
+				}
+			}
+
+			if (!hasAddress)
+				candidates.Add(building);
+		}
+
+		if (candidates.Count == 0)
+			return;
+
+		// ランダムにビルを選択
+		int index = Random.Range(0, candidates.Count);
+		GameObject targetBuilding = candidates[index];
+
+		// 配達先を生成
+		GameObject obj = Instantiate(
+			deliveryAddress,
+			targetBuilding.transform
+		);
+
+		obj.transform.localPosition = new Vector3(0f, 0.5f, 0f);
+		obj.transform.localRotation = Quaternion.identity;
+
+		// Prefabに付いているDeliveryAddressを取得
+		DeliveryAddress addressComponent =
+			obj.GetComponent<DeliveryAddress>();
+
+		if (addressComponent != null) {
+			addressComponent.Initialize(this);
+			activeAddresses.Add(addressComponent);
+		}
+	}
+
+	// 配達完了時に呼び出す
+	public void CompleteDelivery(DeliveryAddress address) {
+		if (address == null)
+			return;
+
+		// 管理リストから削除
+		if (!activeAddresses.Remove(address))
+			return;
+
+		// 配達先を削除
+		Destroy(address.gameObject);
+
+		// 新しい配達先を1個追加
+		SpawnDeliveryAddress();
+	}
 }

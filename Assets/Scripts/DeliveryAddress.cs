@@ -11,8 +11,12 @@ public class DeliveryAddress : MonoBehaviour
     [SerializeField]
     private int increaseViewership = 10;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+	private BuildingGenerator generator;
+
+	private bool isCompleted = false;
+
+	// Start is called once before the first execution of Update after the MonoBehaviour is created
+	void Start()
     {
         
     }
@@ -23,7 +27,25 @@ public class DeliveryAddress : MonoBehaviour
         
     }
 
-    public int GetDeliveryFree() { 
+	public void Initialize(BuildingGenerator generator) {
+		this.generator = generator;
+	}
+
+	private void OnTriggerEnter(Collider other) {
+		if (isCompleted)
+			return;
+
+		// プレイヤーかどうかを判定
+		if (!other.CompareTag("Player"))
+			return;
+
+		isCompleted = true;
+
+		// 配達完了を通知
+		generator?.CompleteDelivery(this);
+	}
+
+	public int GetDeliveryFree() { 
         return deliveryFree;
     }
 
