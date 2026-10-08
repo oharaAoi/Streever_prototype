@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,8 +9,8 @@ public class GameManager : MonoBehaviour
 
     private bool isClear = false;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+	// Start is called once before the first execution of Update after the MonoBehaviour is created
+	void Start()
     {
 		isClear = false;
 	}
@@ -17,8 +18,12 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(gameTime > Time.time) {
+		if (gameTime > Time.time) {
             isClear = true;
 		}
+    }
+
+    public int GetGameTime() {
+        return gameTime;
     }
 }

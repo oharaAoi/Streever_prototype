@@ -4,4 +4,5 @@
     <ui:Label text="所持金  &#x9;:" name="HveMoney" style="font-size: 64px; translate: 38px 696px; -unity-text-outline-color: rgb(255, 255, 255); color: rgb(255, 255, 255); width: 352px;"/>
     <ui:Label text="視聴者数 : " name="Viewership" style="font-size: 64px; width: 329px; color: rgb(255, 255, 255); translate: 42px 471px;"/>
     <ui:Label text="Label" name="ViewershipValue" style="font-size: 64px; color: rgb(255, 255, 255); width: 337px; translate: 369px 382px;"/>
+    <ui:Label text="Label" name="GameTime" style="font-size: 64px; color: rgb(255, 46, 30); width: 277px; -unity-text-align: upper-center; translate: 831px -406px;"/>
 </ui:UXML>
