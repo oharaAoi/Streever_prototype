@@ -6,6 +6,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private PlayerInformation information;
 
+	[SerializeField]
+	private BoostBarUI boostUI;
+
 	// 基本速度
 	[SerializeField]
 	private float baseMoveSpeed = 5;
@@ -145,7 +148,7 @@ public class Player : MonoBehaviour {
 
 		// 移動
 		Move();
-
+		
 		// 回転
 		Rotate();
 
@@ -153,6 +156,9 @@ public class Player : MonoBehaviour {
 		RotateCount();
 
 		prevIsGrounded = isGrounded;
+
+		// UIに情報を渡す
+		boostUI.SetValue(rb.linearVelocity.magnitude);
 	}
 
 	// 移動する
@@ -230,25 +236,6 @@ public class Player : MonoBehaviour {
 		}
 	}
 
-	// 進行方向にキャラを向ける
-	public void RotateToMoveDirection(Vector3 moveDirection) {
-		if (moveDirection.sqrMagnitude <= 0.01f) {
-			return;
-		}
-
-		moveDirection.y = 0.0f;
-		moveDirection.Normalize();
-
-		Quaternion targetRotation =
-			Quaternion.LookRotation(moveDirection);
-
-		transform.rotation = Quaternion.Slerp(
-			transform.rotation,
-			targetRotation,
-			rotateSpeed * Time.deltaTime
-		);
-	}
-
 	// 地上にいるかの判定を行う
 	private bool IsGrounded() {
 		return Physics.Raycast(
@@ -293,9 +280,6 @@ public class Player : MonoBehaviour {
 		if (!isGrounded) {
 			trickCountX = Mathf.FloorToInt(Mathf.Abs(totalAngleX) / 360.0f);
 			trickCountY = Mathf.FloorToInt(Mathf.Abs(totalAngleY) / 360.0f);
-
-			Debug.Log(trickCountX);
-			Debug.Log(trickCountY);
 		}
 	}
 
@@ -320,6 +304,10 @@ public class Player : MonoBehaviour {
 			isSuccessY = true;
 		} else {
 			Debug.Log("y軸 失敗！");
+		}
+
+		if(isSuccessX && isSuccessY) {
+			Debug.Log("トリックアクション成功!!");
 		}
 
 		return isSuccessX && isSuccessY;

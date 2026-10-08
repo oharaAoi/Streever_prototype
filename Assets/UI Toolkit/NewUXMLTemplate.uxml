@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" authoring-id="890703421" editor-extension-mode="False">
+    <ui:ProgressBar value="50.6" title="boost" name="BoostBar" high-value="80" style="height: 48px; width: 422px; align-self: stretch; scale: 1.5 1.5; transform-origin: left top; translate: 37px 942px; flex-direction: column-reverse; align-items: stretch;"/>
+    <ui:Label text="Label" name="HaveMoneyValue" style="font-size: 64px; translate: 368px 791px; color: rgb(255, 255, 255); width: 324px;"/>
+    <ui:Label text="所持金  &#x9;:" name="HveMoney" style="font-size: 64px; translate: 38px 696px; -unity-text-outline-color: rgb(255, 255, 255); color: rgb(255, 255, 255); width: 352px;"/>
+    <ui:Label text="視聴者数 : " name="Viewership" style="font-size: 64px; width: 329px; color: rgb(255, 255, 255); translate: 42px 471px;"/>
+    <ui:Label text="Label" name="ViewershipValue" style="font-size: 64px; color: rgb(255, 255, 255); width: 337px; translate: 369px 382px;"/>
+</ui:UXML>

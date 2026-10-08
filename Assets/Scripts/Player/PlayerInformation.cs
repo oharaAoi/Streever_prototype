@@ -3,8 +3,14 @@ using UnityEngine;
 public class PlayerInformation : MonoBehaviour
 {
 
-    // Š‹à
-    public int haveMoney = 0;
+    [SerializeField]
+	private HaveMoneyUI haveMoneyUI;
+
+	[SerializeField]
+	private ViewerShipUI viewerShipUI;
+
+	// Š‹à
+	public int haveMoney = 0;
 
     // ‹’®Ò”
     public int viewership = 0;
@@ -21,8 +27,14 @@ public class PlayerInformation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-    }
+		if(haveMoneyUI != null) {
+            haveMoneyUI.SetValue(haveMoney);
+		}
+
+        if(viewerShipUI != null) {
+			viewerShipUI.SetValue(viewership);
+		}
+	}
 
     public void TrickViewer(bool isSuccess, int countX, int countY) {
         if (isSuccess) {
@@ -30,5 +42,7 @@ public class PlayerInformation : MonoBehaviour
 		} else {
 			viewership -= trickIncreaseViewership * (countX * countY);
 		}
-    }
+
+		viewership = Mathf.Max(viewership, 0);
+	}
 }
