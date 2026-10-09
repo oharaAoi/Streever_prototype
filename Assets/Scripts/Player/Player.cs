@@ -9,6 +9,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private BoostBarUI boostUI;
 
+	[SerializeField]
+	private PlayerRotationController rotationController;
+
 	// 基本速度
 	[SerializeField]
 	private float baseMoveSpeed = 5;
@@ -130,6 +133,9 @@ public class Player : MonoBehaviour {
 			if (!prevIsGrounded) {
 				// 成功時は視聴者を増やす / 失敗したら減らす
 				information.TrickViewer(IsTrickSuccessful(), trickCountX + 1, trickCountY + 1);
+
+				rotationController.enabled = true;
+				rotationController.ResetTimer();
 			}
 
 			trickCountX = 0;
@@ -143,12 +149,14 @@ public class Player : MonoBehaviour {
 				jumpForwardAngle = transform.forward;
 				jumpForwardAngle.y = 0.0f;
 				jumpForwardAngle = jumpForwardAngle.normalized;
+
+				rotationController.enabled = false;
 			}
 		}
 
 		// 移動
 		Move();
-		
+
 		// 回転
 		Rotate();
 
@@ -273,7 +281,7 @@ public class Player : MonoBehaviour {
 		// 回転後のQuaternionを求める
 		Quaternion rotation =
 			Quaternion.AngleAxis(angleX, transform.right) *
-			Quaternion.AngleAxis(angleY, transform.up);
+			Quaternion.AngleAxis(angleY, new Vector3(0, 1, 0));
 
 		rb.MoveRotation(rotation * rb.rotation);
 	}
@@ -309,7 +317,7 @@ public class Player : MonoBehaviour {
 			Debug.Log("y軸 失敗！");
 		}
 
-		if(isSuccessX && isSuccessY) {
+		if (isSuccessX && isSuccessY) {
 			Debug.Log("トリックアクション成功!!");
 		}
 
