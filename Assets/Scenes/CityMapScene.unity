@@ -5911,6 +5911,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRotationController
   restoreDelay: 1
   restoreSpeed: 5
+--- !u!114 &842286522 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8428764420425565898, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
+  m_PrefabInstance: {fileID: 134627019}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627685797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d3c4c70e31a82c47b1626f2637e138c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInformation
 --- !u!1 &858225390
 GameObject:
   m_ObjectHideFlags: 0
@@ -13234,6 +13245,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   gameTime: 120
+  playerInformation: {fileID: 842286522}
 --- !u!4 &1713709221
 Transform:
   m_ObjectHideFlags: 0

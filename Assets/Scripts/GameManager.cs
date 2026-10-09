@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -18,12 +19,26 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if (gameTime > Time.time) {
+		if (gameTime < Time.time && !isClear) {
             isClear = true;
+            ChangeScene();
 		}
     }
 
     public int GetGameTime() {
         return gameTime;
+    }
+
+    [SerializeField]
+    private PlayerInformation playerInformation;
+
+    public void ChangeScene()
+    {
+        // ResultSceneに渡す情報を保存
+        ResultData.HaveMoney = playerInformation.haveMoney;
+        ResultData.Viewership = playerInformation.viewership;
+
+        // Scene切り替え
+        SceneManager.LoadScene("ResultScene");
     }
 }

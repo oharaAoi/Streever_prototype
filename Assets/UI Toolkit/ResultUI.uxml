@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; width: 100%; height: 100%; flex-direction: column-reverse; justify-content: center; align-items: center; top: 127px;">
+        <ui:Label text="視聴者数：0" name="ViewershipValue" emoji-fallback-support="true" enabled="true" style="font-size: 64px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); top: auto; position: relative; right: auto;"/>
+        <ui:Label text="所持金：0円" name="HaveMoneyValue" style="font-size: 64px; -unity-font-style: bold-and-italic; color: rgb(255, 255, 255); right: auto; position: relative; width: auto; top: auto;"/>
+    </ui:VisualElement>
+</ui:UXML>
