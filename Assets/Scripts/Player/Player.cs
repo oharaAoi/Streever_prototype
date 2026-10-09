@@ -192,12 +192,15 @@ public class Player : MonoBehaviour {
 
 				rb.linearVelocity = velocity;
 			} else {
-				velocity.x = 0.0f;
-				velocity.z = 0.0f;
 
 				// èôÅXÇ…å∏ë¨Ç∑ÇÈ
 				currentSpeed -= deceleration * Time.deltaTime;
 				currentSpeed = Mathf.Max(currentSpeed, 0.0f);
+
+				velocity.x = direction.x * currentSpeed;
+				velocity.z = direction.z * currentSpeed;
+
+				rb.linearVelocity = velocity;
 			}
 		}
 	}

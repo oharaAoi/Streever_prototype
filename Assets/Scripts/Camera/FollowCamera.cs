@@ -16,15 +16,13 @@ public class FollowCamera : MonoBehaviour {
 
 	private Vector3 velocity;
 
+	// ワールド座標系でのカメラオフセット
+	private Vector3 currentOffset;
 
-	// Start is called once before the first execution of Update after the MonoBehaviour is created
-	void Start() {
-
-	}
-
-	// Update is called once per frame
-	void Update() {
-
+	private void Start() {
+		if (target != null) {
+			currentOffset = target.rotation * offset;
+		}
 	}
 
 	private void LateUpdate() {
@@ -32,15 +30,13 @@ public class FollowCamera : MonoBehaviour {
 			return;
 		}
 
-		Vector3 targetPosition = new Vector3();
-
-		if (player != null) {
-			if (player.isGrounded) {
-				targetPosition = target.position + target.rotation * offset;
-			} else {
-				targetPosition = target.position + offset;
-			}
+		// 接地中のみプレイヤーの回転を反映
+		if (player != null && player.isGrounded) {
+			currentOffset = target.rotation * offset;
 		}
+
+		// 空中では最後に保存したオフセットを使用
+		Vector3 targetPosition = target.position + currentOffset;
 
 		transform.position = Vector3.SmoothDamp(
 			transform.position,
@@ -49,11 +45,9 @@ public class FollowCamera : MonoBehaviour {
 			smoothTime
 		);
 
-		if (player != null) {
-			if (player.isGrounded) {
-				transform.LookAt(target);
-			}
+		// 接地中のみカメラの向きを変更
+		if (player != null && player.isGrounded) {
+			transform.LookAt(target);
 		}
 	}
-
 }
