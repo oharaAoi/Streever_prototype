@@ -6,6 +6,13 @@ public class PlayerCollisionCallback : MonoBehaviour
 	[SerializeField]
 	private Animator animator;
 
+	[SerializeField]
+	private Player player;
+
+	public void Awake() {
+		player = GetComponent<Player>();
+	}
+
 	private void OnTriggerEnter(Collider other) {
 
 		// Œš•¨‚É‚ ‚½‚Á‚½Û‚Ìˆ—
@@ -20,16 +27,16 @@ public class PlayerCollisionCallback : MonoBehaviour
 			}
 		}
 
-	}
-
-
-	private void OnCollisionEnter(Collision collision) {
 		// ƒ|[ƒ‹‚É‚ ‚½‚Á‚½Û‚Ìˆ—
-		if (collision.gameObject.CompareTag("Pole")) {
-			if (animator != null) {
-				animator.SetTrigger("PoleHit");
+		if (other.tag == "Pole") {
+			if (!player.isGrounded) {
+				if (animator != null) {
+					animator.SetTrigger("PoleHit");
+					player.isCorrectingRotation = true;
+				}
 			}
 		}
+
 	}
 
 }

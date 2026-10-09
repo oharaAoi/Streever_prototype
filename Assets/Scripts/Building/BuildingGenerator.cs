@@ -31,6 +31,14 @@ public class BuildingGenerator : MonoBehaviour
 	[SerializeField]
 	private GameObject deliveryAddress;
 
+	[Header("ポール")]
+	[SerializeField]
+	private GameObject pole;
+
+	[SerializeField]
+	private float poleOffset = 10.0f;
+
+
 	[SerializeField]
 	[Min(0)]
 	private int deliveryAddressCount = 5;
@@ -114,6 +122,9 @@ public class BuildingGenerator : MonoBehaviour
 
 				// リストに追加
 				buildings.Add(building);
+
+				// 建物1個につきPoleを1個生成
+				SpawnPole(building, width, depth);
 			}
         }
 
@@ -200,5 +211,65 @@ public class BuildingGenerator : MonoBehaviour
 
 		// 新しい配達先を1個追加
 		SpawnDeliveryAddress();
+	}
+
+	// 建物1個につきPoleを1個生成する
+	private void SpawnPole(GameObject building, float width, float depth) {
+		if (pole == null)
+			return;
+
+		float halfWidth = width * 0.5f;
+		float halfDepth = depth * 0.5f;
+
+		Vector3 localPosition = Vector3.zero;
+		Quaternion rotation = Quaternion.identity;
+
+		// 4つの壁からランダムに1つ選択
+		int side = Random.Range(0, 4);
+
+		switch (side) {
+			case 0: // 前面
+				localPosition = new Vector3(
+					Random.Range(-halfWidth, halfWidth),
+					0.0f,
+					halfDepth + poleOffset
+				);
+				break;
+
+			case 1: // 背面
+				localPosition = new Vector3(
+					Random.Range(-halfWidth, halfWidth),
+					0.0f,
+					-halfDepth - poleOffset
+				);
+				break;
+
+			case 2: // 右側
+				localPosition = new Vector3(
+					halfWidth + poleOffset,
+					0.0f,
+					Random.Range(-halfDepth, halfDepth)
+				);
+				break;
+
+			case 3: // 左側
+				localPosition = new Vector3(
+					-halfWidth - poleOffset,
+					0.0f,
+					Random.Range(-halfDepth, halfDepth)
+				);
+				break;
+		}
+
+		// 建物の底面中心を基準に配置
+		Vector3 position = new Vector3(
+			building.transform.position.x + localPosition.x,
+			building.transform.position.y
+				- building.transform.localScale.y * 0.5f,
+			building.transform.position.z + localPosition.z
+		);
+
+		// Pole生成
+		GameObject obj = Instantiate(pole, position, rotation, transform);
 	}
 }

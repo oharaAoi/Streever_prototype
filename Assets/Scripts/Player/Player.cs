@@ -71,6 +71,12 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private LayerMask groundLayer;
 
+	[SerializeField]
+	private float rotationSpeed = 10.0f;
+
+	// 姿勢を補正するか
+	public bool isCorrectingRotation = false;
+
 	// private 
 	private Rigidbody rb;
 
@@ -114,8 +120,10 @@ public class Player : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() {
-		// 入力受付
-		InputReception();
+		if (!isCorrectingRotation) {
+			// 入力受付
+			InputReception();
+		}
 
 		// ブースト関連の時間の計測
 		MeasureBoostMode();
@@ -162,6 +170,10 @@ public class Player : MonoBehaviour {
 
 		// 回転数のカウント
 		RotateCount();
+
+		if (isCorrectingRotation) {
+			CorrectRotation();
+		}
 
 		prevIsGrounded = isGrounded;
 
@@ -294,6 +306,39 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	private void CorrectRotation() {
+
+		// 現在の進行方向
+		Vector3 direction = rb.linearVelocity;
+
+		// Y方向の速度を無視
+		direction.y = 0.0f;
+
+		// 速度がほとんどない場合は処理しない
+		if (direction.sqrMagnitude < 0.001f) {
+			return;
+		}
+
+		// 進行方向を向き、上方向をワールドY軸に合わせる
+		Quaternion targetRotation =
+			Quaternion.LookRotation(direction.normalized, Vector3.up);
+
+		// 現在の回転から目標回転へ補間
+		Quaternion newRotation = Quaternion.Slerp(
+			rb.rotation,
+			targetRotation,
+			rotationSpeed * Time.fixedDeltaTime
+		);
+
+		rb.MoveRotation(newRotation);
+
+		// 十分近づいたら終了
+		if (Quaternion.Angle(newRotation, targetRotation) < 35.0f) {
+			rb.MoveRotation(targetRotation);
+			isCorrectingRotation = false;
+		}
+	}
+
 	// トリックアクションが成功したかどうかの判定を取る
 	private bool IsTrickSuccessful() {
 
@@ -322,5 +367,10 @@ public class Player : MonoBehaviour {
 		}
 
 		return isSuccessX && isSuccessY;
+	}
+
+	public void ResetRotation() {
+		rotationController.enabled = true;
+		rotationController.ResetTimer();
 	}
 }
