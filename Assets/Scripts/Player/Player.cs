@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour {
 
@@ -107,6 +108,10 @@ public class Player : MonoBehaviour {
 
 	private Vector3 jumpForwardAngle = Vector3.zero;
 
+	private Vector3 moveDirection = Vector3.forward;
+
+	public Vector3 MoveDirection => moveDirection;
+
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start() {
 		currentSpeed = baseMoveSpeed;
@@ -116,6 +121,11 @@ public class Player : MonoBehaviour {
 		if (rb == null) {
 			Debug.Log("rigidBodyがアタッチされていません");
 		}
+
+		moveDirection = Vector3.ProjectOnPlane(
+		transform.forward,
+		Vector3.up
+		).normalized;
 	}
 
 	// Update is called once per frame
@@ -162,11 +172,12 @@ public class Player : MonoBehaviour {
 			}
 		}
 
-		// 移動
-		Move();
 
 		// 回転
 		Rotate();
+
+		// 移動
+		Move();
 
 		// 回転数のカウント
 		RotateCount();
@@ -185,7 +196,7 @@ public class Player : MonoBehaviour {
 	private void Move() {
 
 		Vector3 velocity = rb.linearVelocity;
-		Vector3 direction = transform.forward;
+		Vector3 direction = moveDirection;
 
 		// 地面なら加速を行う
 		if (isGrounded) {
@@ -222,6 +233,12 @@ public class Player : MonoBehaviour {
 
 				rb.linearVelocity = velocity;
 			}
+		} else {
+			// 空中ではY軸回転だけを反映した方向に進む
+			velocity.x = moveDirection.x * currentSpeed;
+			velocity.z = moveDirection.z * currentSpeed;
+
+			rb.linearVelocity = velocity;
 		}
 	}
 
@@ -275,7 +292,7 @@ public class Player : MonoBehaviour {
 		float rotateSpeedX = airRotateSpeedX;
 		float rotateSpeedY = rotateSpeed;
 
-		// 空中かどうかで回転するかどうかを決める
+		// 空中かどうかで回転速度を変更
 		if (!isGrounded) {
 			rotateSpeedY = airRotateSpeedY;
 		} else {
@@ -290,12 +307,18 @@ public class Player : MonoBehaviour {
 		totalAngleX += angleX;
 		totalAngleY += angleY;
 
-		// 回転後のQuaternionを求める
+		// 既存のキャラクター回転
 		Quaternion rotation =
 			Quaternion.AngleAxis(angleX, transform.right) *
-			Quaternion.AngleAxis(angleY, new Vector3(0, 1, 0));
+			Quaternion.AngleAxis(angleY, Vector3.up);
 
 		rb.MoveRotation(rotation * rb.rotation);
+
+		// Y軸回転のみ進行方向に反映
+		Quaternion yawRotation = Quaternion.AngleAxis(angleY, Vector3.up);
+
+		moveDirection = yawRotation * moveDirection;
+		moveDirection.Normalize();
 	}
 
 	// 何回転したかを取得する

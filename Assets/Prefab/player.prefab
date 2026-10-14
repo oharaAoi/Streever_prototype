@@ -189,6 +189,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4531031350230130202}
+  - component: {fileID: 863741995664104367}
   m_Layer: 0
   m_Name: model
   m_TagString: Untagged
@@ -215,6 +216,28 @@ Transform:
   - {fileID: 267739102541628093}
   m_Father: {fileID: 8767248744121140068}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &863741995664104367
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3822388368388205028}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 6acac03ee1a913c4ba17e4d0c42f5fc5, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6111023391418560485
 GameObject:
   m_ObjectHideFlags: 0
@@ -500,6 +523,7 @@ GameObject:
   - component: {fileID: 5063773488729185545}
   - component: {fileID: 8428764420425565898}
   - component: {fileID: 6918108273942144436}
+  - component: {fileID: 5142985582039764104}
   m_Layer: 0
   m_Name: player
   m_TagString: Player
@@ -552,10 +576,10 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7637779348410140323}
   serializedVersion: 5
-  m_Mass: 1
+  m_Mass: 1000
   m_LinearDamping: 0
   m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: -0.5, z: -0.8}
+  m_CenterOfMass: {x: 0, y: -0.5, z: -1}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
@@ -569,7 +593,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 96
+  m_Constraints: 112
   m_CollisionDetection: 0
 --- !u!114 &5063773488729185545
 MonoBehaviour:
@@ -584,23 +608,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player
   information: {fileID: 8428764420425565898}
+  boostUI: {fileID: 0}
+  rotationController: {fileID: 5142985582039764104}
   baseMoveSpeed: 2
-  maxMoveSpeed: 50
+  maxMoveSpeed: 65
   boostSpeed: 80
-  boostStartSpeed: 45
+  boostStartSpeed: 60
   boostTime: 3
   boostCoolTime: 10
-  acceleration: 5
-  deceleration: 1
+  acceleration: 8
+  deceleration: 10
   rotateSpeed: 80
-  airRotateSpeedX: 240
-  airRotateSpeedY: 240
+  airRotateSpeedX: 360
+  airRotateSpeedY: 360
   toleranceAngleX: 45
   toleranceAngleY: 45
   groundCheckDistance: 3
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
+  rotationSpeed: 10
+  isCorrectingRotation: 0
   isGrounded: 1
 --- !u!114 &8428764420425565898
 MonoBehaviour:
@@ -614,6 +642,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d3c4c70e31a82c47b1626f2637e138c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInformation
+  haveMoneyUI: {fileID: 0}
+  viewerShipUI: {fileID: 0}
   haveMoney: 0
   viewership: 0
   trickIncreaseViewership: 100
@@ -629,3 +659,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39b789eee255090479f220ef5c94f805, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCollisionCallback
+  animator: {fileID: 863741995664104367}
+  player: {fileID: 0}
+--- !u!114 &5142985582039764104
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7637779348410140323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 259c741ed748ff249bedd3f3dd50402f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerRotationController
+  restoreDelay: 1
+  restoreSpeed: 5

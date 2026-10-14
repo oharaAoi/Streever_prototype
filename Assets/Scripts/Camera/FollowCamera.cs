@@ -21,21 +21,37 @@ public class FollowCamera : MonoBehaviour {
 
 	private void Start() {
 		if (target != null) {
-			currentOffset = target.rotation * offset;
+			Quaternion rotation = Quaternion.Euler(
+				0.0f,
+				target.eulerAngles.y,
+				0.0f
+			);
+
+			currentOffset = rotation * offset;
 		}
 	}
 
 	private void LateUpdate() {
-		if (target == null) {
+		if (target == null || player == null) {
 			return;
 		}
 
-		// 接地中のみプレイヤーの回転を反映
-		if (player != null && player.isGrounded) {
-			currentOffset = target.rotation * offset;
+		// X軸回転の影響を受けない進行方向
+		Vector3 forward = player.MoveDirection;
+
+		if (forward.sqrMagnitude < 0.001f) {
+			return;
 		}
 
-		// 空中では最後に保存したオフセットを使用
+		// 進行方向からY軸回転を生成
+		Quaternion rotation = Quaternion.LookRotation(
+			forward,
+			Vector3.up
+		);
+
+		// カメラオフセットを計算
+		currentOffset = rotation * offset;
+
 		Vector3 targetPosition = target.position + currentOffset;
 
 		transform.position = Vector3.SmoothDamp(
@@ -45,9 +61,6 @@ public class FollowCamera : MonoBehaviour {
 			smoothTime
 		);
 
-		// 接地中のみカメラの向きを変更
-		if (player != null && player.isGrounded) {
-			transform.LookAt(target);
-		}
+		transform.LookAt(target.position);
 	}
 }
