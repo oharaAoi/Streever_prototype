@@ -16,18 +16,12 @@ public class FollowCamera : MonoBehaviour {
 
 	private Vector3 velocity;
 
-	// ワールド座標系でのカメラオフセット
+	// 現在のカメラオフセット
 	private Vector3 currentOffset;
 
 	private void Start() {
 		if (target != null) {
-			Quaternion rotation = Quaternion.Euler(
-				0.0f,
-				target.eulerAngles.y,
-				0.0f
-			);
-
-			currentOffset = rotation * offset;
+			currentOffset = target.rotation * offset;
 		}
 	}
 
@@ -36,24 +30,25 @@ public class FollowCamera : MonoBehaviour {
 			return;
 		}
 
-		// X軸回転の影響を受けない進行方向
-		Vector3 forward = player.MoveDirection;
+		Quaternion rotation;
 
-		if (forward.sqrMagnitude < 0.001f) {
-			return;
+		if (player.isGrounded) {
+			// 地上ではプレイヤーの回転をすべて反映
+			rotation = target.rotation;
+		} else {
+			// 空中ではY軸回転のみを反映
+			rotation = player.MoveRotation;
 		}
 
-		// 進行方向からY軸回転を生成
-		Quaternion rotation = Quaternion.LookRotation(
-			forward,
-			Vector3.up
-		);
+		// カメラ固定操作が有効な場合のみ追従方向を更新
+		if (player.isGrounded || player.IsCameraMovement) {
+			currentOffset = rotation * offset;
+		}
 
-		// カメラオフセットを計算
-		currentOffset = rotation * offset;
-
+		// カメラの目標位置
 		Vector3 targetPosition = target.position + currentOffset;
 
+		// 滑らかに移動
 		transform.position = Vector3.SmoothDamp(
 			transform.position,
 			targetPosition,
@@ -61,6 +56,7 @@ public class FollowCamera : MonoBehaviour {
 			smoothTime
 		);
 
-		transform.LookAt(target.position);
+		// プレイヤーの方向を向く
+		transform.LookAt(target.position, Vector3.up);
 	}
 }

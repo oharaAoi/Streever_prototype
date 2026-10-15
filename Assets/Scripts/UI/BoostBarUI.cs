@@ -28,10 +28,10 @@ public class BoostBarUI : MonoBehaviour
 
 		// 最大値・最小値を設定
 		progressBar.lowValue = 0;
-		progressBar.highValue = 80;
+		progressBar.highValue = 60;
 
 		// 初期値
-		progressBar.value = 100;
+		progressBar.value = 0;
 	}
 
 	// ProgressBarの値を変更

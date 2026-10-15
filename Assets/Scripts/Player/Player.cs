@@ -106,11 +106,19 @@ public class Player : MonoBehaviour {
 	private float boostTimer = 0;
 	private float boostCoolTimer = 0;
 
+	private bool isCameraMovement = false;
+
 	private Vector3 jumpForwardAngle = Vector3.zero;
 
-	private Vector3 moveDirection = Vector3.forward;
+	// 移動方向を決めるY軸回転
+	private Quaternion moveRotation = Quaternion.identity;
+
+	private Vector3 moveDirection;
 
 	public Vector3 MoveDirection => moveDirection;
+	public Quaternion MoveRotation => moveRotation;
+
+	public bool IsCameraMovement => isCameraMovement;
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start() {
@@ -122,10 +130,7 @@ public class Player : MonoBehaviour {
 			Debug.Log("rigidBodyがアタッチされていません");
 		}
 
-		moveDirection = Vector3.ProjectOnPlane(
-		transform.forward,
-		Vector3.up
-		).normalized;
+		moveRotation = Quaternion.Euler(0.0f, transform.eulerAngles.y, 0.0f);
 	}
 
 	// Update is called once per frame
@@ -196,7 +201,7 @@ public class Player : MonoBehaviour {
 	private void Move() {
 
 		Vector3 velocity = rb.linearVelocity;
-		Vector3 direction = moveDirection;
+		Vector3 direction = isGrounded ? transform.forward : moveRotation * Vector3.forward;
 
 		// 地面なら加速を行う
 		if (isGrounded) {
@@ -233,13 +238,15 @@ public class Player : MonoBehaviour {
 
 				rb.linearVelocity = velocity;
 			}
-		} else {
+		} else if(isCameraMovement) {
 			// 空中ではY軸回転だけを反映した方向に進む
-			velocity.x = moveDirection.x * currentSpeed;
-			velocity.z = moveDirection.z * currentSpeed;
+			velocity.x = direction.x * currentSpeed;
+			velocity.z = direction.z * currentSpeed;
 
 			rb.linearVelocity = velocity;
 		}
+
+		moveDirection = direction;
 	}
 
 	// ブースト関連の時間の計測
@@ -267,13 +274,18 @@ public class Player : MonoBehaviour {
 
 	// 移動方向を取得する
 	private void InputReception() {
+		// 左右方向の指定
 		horizontal = Input.GetAxisRaw("Horizontal");
 
+		// 前方に進行する
 		if (Input.GetKey(KeyCode.Space)) {
 			vertical = 1;
 		} else {
 			vertical = 0;
 		}
+
+		// カメラ固定を解除する
+		isCameraMovement = Input.GetButton("CameraFixed");
 	}
 
 	// 地上にいるかの判定を行う
@@ -307,18 +319,18 @@ public class Player : MonoBehaviour {
 		totalAngleX += angleX;
 		totalAngleY += angleY;
 
-		// 既存のキャラクター回転
-		Quaternion rotation =
-			Quaternion.AngleAxis(angleX, transform.right) *
+		// 移動方向用のY軸回転を更新
+		moveRotation =
+			Quaternion.AngleAxis(angleY, Vector3.up) * moveRotation;
+
+		// 前転はローカルX軸、左右回転はワールドY軸
+		Quaternion yaw =
 			Quaternion.AngleAxis(angleY, Vector3.up);
 
-		rb.MoveRotation(rotation * rb.rotation);
+		Quaternion pitch =
+			Quaternion.AngleAxis(angleX, Vector3.right);
 
-		// Y軸回転のみ進行方向に反映
-		Quaternion yawRotation = Quaternion.AngleAxis(angleY, Vector3.up);
-
-		moveDirection = yawRotation * moveDirection;
-		moveDirection.Normalize();
+		rb.MoveRotation(yaw * rb.rotation * pitch);
 	}
 
 	// 何回転したかを取得する

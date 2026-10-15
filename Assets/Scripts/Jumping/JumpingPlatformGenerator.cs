@@ -217,65 +217,57 @@ public class JumpingPlatformGenerator : MonoBehaviour
     }
 
 
-    // =========================================================
-    // 実際のBuilding位置を取得
-    // =========================================================
+	// =========================================================
+	// 実際のBuilding位置を取得
+	// =========================================================
 
-    private void CollectBuildingGrid()
-    {
-        buildingXPositions.Clear();
-        buildingZPositions.Clear();
+	private void CollectBuildingGrid() {
+		buildingXPositions.Clear();
+		buildingZPositions.Clear();
 
-        foreach (Transform building in buildingsRoot)
-        {
-            AddUnique(
-                buildingXPositions,
-                building.position.x
-            );
+		foreach (Transform building in buildingsRoot) {
+			// BuildingGenerator が生成したビルだけを対象にする
+			if (!building.name.StartsWith("Building_"))
+				continue;
 
-            AddUnique(
-                buildingZPositions,
-                building.position.z
-            );
-        }
+			AddUnique(
+				buildingXPositions,
+				building.position.x
+			);
 
-        buildingXPositions.Sort();
-        buildingZPositions.Sort();
+			AddUnique(
+				buildingZPositions,
+				building.position.z
+			);
+		}
 
-        verticalRoadXPositions.Clear();
-        horizontalRoadZPositions.Clear();
+		buildingXPositions.Sort();
+		buildingZPositions.Sort();
 
-        // 隣り合うビル列の真ん中
-        for (int i = 0;
-             i < buildingXPositions.Count - 1;
-             i++)
-        {
-            float middle =
-                (
-                    buildingXPositions[i] +
-                    buildingXPositions[i + 1]
-                ) * 0.5f;
+		verticalRoadXPositions.Clear();
+		horizontalRoadZPositions.Clear();
 
-            verticalRoadXPositions.Add(middle);
-        }
+		// X方向の道路
+		for (int i = 0; i < buildingXPositions.Count - 1; i++) {
+			float middle =
+				(buildingXPositions[i] +
+				 buildingXPositions[i + 1]) * 0.5f;
 
-        // 隣り合うビル行の真ん中
-        for (int i = 0;
-             i < buildingZPositions.Count - 1;
-             i++)
-        {
-            float middle =
-                (
-                    buildingZPositions[i] +
-                    buildingZPositions[i + 1]
-                ) * 0.5f;
+			verticalRoadXPositions.Add(middle);
+		}
 
-            horizontalRoadZPositions.Add(middle);
-        }
-    }
+		// Z方向の道路
+		for (int i = 0; i < buildingZPositions.Count - 1; i++) {
+			float middle =
+				(buildingZPositions[i] +
+				 buildingZPositions[i + 1]) * 0.5f;
+
+			horizontalRoadZPositions.Add(middle);
+		}
+	}
 
 
-    private void AddUnique(
+	private void AddUnique(
         List<float> values,
         float value)
     {
