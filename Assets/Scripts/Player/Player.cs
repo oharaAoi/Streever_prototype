@@ -75,6 +75,17 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private Animator animator;
 
+	[Header("ボタンを何回押したら縦トリックアクションを行うか")]
+	[SerializeField]
+	private int spacePutCount = 5;
+
+	[SerializeField]
+	private int requiredHoldFrames = 5;
+
+	[SerializeField]
+	private int reverseAcceptFrames = 10;
+
+
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
 
@@ -104,12 +115,6 @@ public class Player : MonoBehaviour {
 
 	private bool isHorizontalTrick = false;
 
-	[SerializeField]
-	private int requiredHoldFrames = 5;
-
-	[SerializeField]
-	private int reverseAcceptFrames = 10;
-
 	// 現在押している方向
 	private int currentDirection = 0;
 
@@ -130,9 +135,6 @@ public class Player : MonoBehaviour {
 
 	private Vector3 moveDirection;
 
-	[Header("ボタンを何回押したら縦トリックアクションを行うか")]
-	[SerializeField]
-	private int spacePutCount = 5;
 
 	private int currentSpacePutCount = 0;
 
