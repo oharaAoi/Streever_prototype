@@ -59,6 +59,12 @@ public class BuildingGenerator : MonoBehaviour
 	private readonly List<GameObject> buildings = new();
 	private readonly List<DeliveryAddress> activeAddresses = new();
 
+	private void Start() {
+		for (int i = 0; i < deliveryAddressCount; i++) {
+			SpawnDeliveryAddress();
+		}
+	}
+
 	[ContextMenu("Generate Buildings")]
     public void GenerateBuildings()
     {
@@ -140,11 +146,6 @@ public class BuildingGenerator : MonoBehaviour
 				SpawnPole(building, width, depth);
 			}
         }
-
-
-		for (int i = 0; i < deliveryAddressCount; i++) {
-			SpawnDeliveryAddress();
-		}
 	}
 
     [ContextMenu("Clear Buildings")]
