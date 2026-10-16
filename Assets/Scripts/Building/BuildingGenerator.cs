@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BuildingGenerator : MonoBehaviour
 {
@@ -29,7 +30,19 @@ public class BuildingGenerator : MonoBehaviour
 
 	[Header("配達先の設定")]
 	[SerializeField]
-	private GameObject deliveryAddress;
+	private GameObject deliveryAddressPrefab;
+
+	[Header("UI Prefab")]
+	[SerializeField]
+	private WorldTargetUI markerPrefab;
+
+	[Header("Canvas")]
+	[SerializeField]
+	private RectTransform canvasRect;
+
+	[Header("Camera")]
+	[SerializeField]
+	private Camera targetCamera;
 
 	[Header("ポール")]
 	[SerializeField]
@@ -137,17 +150,31 @@ public class BuildingGenerator : MonoBehaviour
     [ContextMenu("Clear Buildings")]
     public void ClearBuildings()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
-        {
-            DestroyImmediate(
-                transform.GetChild(i).gameObject
-            );
-        }
-    }
+		// 生成済みの建物を削除
+		for (int i = transform.childCount - 1; i >= 0; i--) {
+			DestroyImmediate(transform.GetChild(i).gameObject);
+		}
+
+		// 生成済みのUIを削除
+		if (canvasRect != null) {
+			WorldTargetUI[] markers =
+				canvasRect.GetComponentsInChildren<WorldTargetUI>(true);
+
+			foreach (WorldTargetUI marker in markers) {
+				if (marker != null) {
+					DestroyImmediate(marker.gameObject);
+				}
+			}
+		}
+
+		// 管理リストをクリア
+		buildings.Clear();
+		activeAddresses.Clear();
+	}
 
 	// 配達先を1個生成
 	public void SpawnDeliveryAddress() {
-		if (deliveryAddress == null || buildings.Count == 0)
+		if (deliveryAddressPrefab == null || buildings.Count == 0)
 			return;
 
 		// 現在配達先が配置されていないビルを取得
@@ -179,21 +206,42 @@ public class BuildingGenerator : MonoBehaviour
 		GameObject targetBuilding = candidates[index];
 
 		// 配達先を生成
-		GameObject obj = Instantiate(
-			deliveryAddress,
+		GameObject deliveryAddress = Instantiate(
+			deliveryAddressPrefab,
 			targetBuilding.transform
 		);
 
-		obj.transform.localPosition = new Vector3(0f, 0.5f, 0f);
-		obj.transform.localRotation = Quaternion.identity;
+		deliveryAddress.transform.localPosition =
+			new Vector3(0f, 0.5f, 0f);
+
+		deliveryAddress.transform.localRotation =
+			Quaternion.identity;
 
 		// Prefabに付いているDeliveryAddressを取得
 		DeliveryAddress addressComponent =
-			obj.GetComponent<DeliveryAddress>();
+			deliveryAddress.GetComponent<DeliveryAddress>();
 
 		if (addressComponent != null) {
 			addressComponent.Initialize(this);
 			activeAddresses.Add(addressComponent);
+		}
+
+		// UIをCanvasの子として生成
+		if (markerPrefab != null &&
+			canvasRect != null &&
+			targetCamera != null) {
+
+			WorldTargetUI marker = Instantiate(
+				markerPrefab,
+				canvasRect
+			);
+
+			// 配達先を追従対象に設定
+			marker.Initialize(
+				deliveryAddress.transform,
+				targetCamera,
+				canvasRect
+			);
 		}
 	}
 
