@@ -20,6 +20,41 @@ public class TrafficCar : MonoBehaviour
     private float segmentDistance;
     private bool ready;
 
+    [Header("ジャンプ設定")]
+    [SerializeField]
+    private float jumpHeight = 12.0f;
+
+    [SerializeField]
+    private float jumpDuration = 1.2f;
+
+    private bool isJumping = false;
+    private float jumpTimer = 0.0f;
+    private float groundY = 0.0f;
+
+    // ジャンプ中の高さを計算
+    private float GetJumpOffset()
+    {
+        if (!isJumping)
+            return 0.0f;
+
+        float t = Mathf.Clamp01(
+            jumpTimer / Mathf.Max(0.01f, jumpDuration)
+        );
+
+        return Mathf.Sin(t * Mathf.PI) * jumpHeight;
+    }
+
+    // ジャンプ開始
+    public void BeginJump()
+    {
+        if (!ready || isJumping)
+            return;
+
+        isJumping = true;
+        jumpTimer = 0.0f;
+    }
+
+
     public void Initialize(
         TrafficManager traffic,
         Vector2Int start,
@@ -34,6 +69,9 @@ public class TrafficCar : MonoBehaviour
         to = from + direction;
 
         speed = Mathf.Max(0.1f, drivingSpeed);
+        groundY = manager.Junction(from).y;
+        isJumping = false;
+        jumpTimer = 0.0f;
         segmentDistance = 0f;
 
         targets.Clear();
@@ -65,10 +103,22 @@ public class TrafficCar : MonoBehaviour
         );
     }
 
+
     private void Update()
     {
         if (!ready || manager == null)
             return;
+
+        // ジャンプ時間を進める
+        if (isJumping)
+        {
+            jumpTimer += Time.deltaTime;
+
+            if (jumpTimer >= jumpDuration)
+            {
+                jumpTimer = jumpDuration;
+            }
+        }
 
         if (targets.Count == 0)
             BuildTurnAndNextSegment();
@@ -78,49 +128,72 @@ public class TrafficCar : MonoBehaviour
 
         Vector3 destination = targets.Peek();
 
-        Vector3 delta =
-            destination - transform.position;
+        // Y方向を無視して道路上の移動方向を求める
+        Vector3 currentFlat = transform.position;
+        currentFlat.y = groundY;
 
-        delta.y = 0;
+        Vector3 targetFlat = destination;
+        targetFlat.y = groundY;
 
+        Vector3 delta = targetFlat - currentFlat;
+
+        // 目標地点に到着
         if (delta.sqrMagnitude < 0.06f)
         {
-            transform.position = destination;
+            currentFlat = targetFlat;
             targets.Dequeue();
-            return;
         }
-
-        if (CarAhead())
-            return;
-
-        float movement =
-            speed * Time.deltaTime;
-
-        Vector3 next = Vector3.MoveTowards(
-            transform.position,
-            destination,
-            movement
-        );
-
-        Vector3 move =
-            next - transform.position;
-
-        if (move.sqrMagnitude > 0.000001f)
+        else
         {
-            Quaternion desired = Quaternion.LookRotation(
-                move.normalized,
-                Vector3.up
+            // ジャンプ中は前方車両で停止しない
+            if (!isJumping && CarAhead())
+                return;
+
+            Vector3 next = Vector3.MoveTowards(
+                currentFlat,
+                targetFlat,
+                speed * Time.deltaTime
             );
 
-            transform.rotation = Quaternion.RotateTowards(
-                transform.rotation,
-                desired,
-                240f * Time.deltaTime
-            );
+            Vector3 move = next - currentFlat;
+
+            if (move.sqrMagnitude > 0.000001f)
+            {
+                Quaternion desired =
+                    Quaternion.LookRotation(
+                        move.normalized,
+                        Vector3.up
+                    );
+
+                transform.rotation =
+                    Quaternion.RotateTowards(
+                        transform.rotation,
+                        desired,
+                        240f * Time.deltaTime
+                    );
+            }
+
+            currentFlat = next;
         }
 
-        transform.position = next;
+        // ジャンプの放物線を高さに加算
+        currentFlat.y = groundY + GetJumpOffset();
+
+        transform.position = currentFlat;
+
+        // ジャンプ終了
+        if (isJumping && jumpTimer >= jumpDuration)
+        {
+            isJumping = false;
+            jumpTimer = 0.0f;
+
+            Vector3 position = transform.position;
+            position.y = groundY;
+
+            transform.position = position;
+        }
     }
+
 
     private void BuildTurnAndNextSegment()
     {
