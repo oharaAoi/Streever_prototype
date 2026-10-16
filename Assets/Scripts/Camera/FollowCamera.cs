@@ -41,9 +41,8 @@ public class FollowCamera : MonoBehaviour {
 		}
 
 		// カメラ固定操作が有効な場合のみ追従方向を更新
-		if (player.isGrounded || player.IsCameraMovement) {
-			currentOffset = rotation * offset;
-		}
+		currentOffset = rotation * offset;
+
 
 		// カメラの目標位置
 		Vector3 targetPosition = target.position + currentOffset;

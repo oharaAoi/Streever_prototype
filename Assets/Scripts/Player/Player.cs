@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour {
 
@@ -57,13 +58,6 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private float airRotateSpeedY = 10.0f;
 
-	// トリックアクション成功判定の値
-	[SerializeField]
-	private float toleranceAngleX = 45.0f;
-
-	[SerializeField]
-	private float toleranceAngleY = 45.0f;
-
 	// 地面との距離
 	[SerializeField]
 	private float groundCheckDistance = 0.6f;
@@ -77,6 +71,20 @@ public class Player : MonoBehaviour {
 
 	[SerializeField]
 	private BoostCoolTimeBarUI boostCoolTimeBarUI;
+
+	[SerializeField]
+	private Animator animator;
+
+	[Header("ボタンを何回押したら縦トリックアクションを行うか")]
+	[SerializeField]
+	private int spacePutCount = 5;
+
+	[SerializeField]
+	private int requiredHoldFrames = 5;
+
+	[SerializeField]
+	private int reverseAcceptFrames = 10;
+
 
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
@@ -99,17 +107,26 @@ public class Player : MonoBehaviour {
 	private bool isBoostMode = false;
 	private bool isBoosCooldown = false;
 
-	// 回転送料
-	private float totalAngleX = 0.0f;
-	private float totalAngleY = 0.0f;
-
 	private int trickCountX = 0;
 	private int trickCountY = 0;
 
 	private float boostTimer = 0;
 	private float boostCoolTimer = 0;
 
-	private bool isCameraMovement = false;
+	private bool isHorizontalTrick = false;
+
+	// 現在押している方向
+	private int currentDirection = 0;
+
+	// 押し続けているフレーム数
+	private int holdFrames = 0;
+
+	// 最後に入力されたフレーム
+	private int lastInputFrame = -1;
+
+
+	// 反転待ちの方向
+	private int waitingDirection = 0;
 
 	private Vector3 jumpForwardAngle = Vector3.zero;
 
@@ -118,6 +135,10 @@ public class Player : MonoBehaviour {
 
 	private Vector3 moveDirection;
 
+
+	private int currentSpacePutCount = 0;
+
+	// getter関連
 	public Vector3 MoveDirection => moveDirection;
 	public Quaternion MoveRotation => moveRotation;
 
@@ -125,9 +146,6 @@ public class Player : MonoBehaviour {
 	public float BoostCoolTime => boostCoolTime;
 	public float BoostTimer => boostTimer;
 	public float BoostCoolTimer => boostCoolTimer;
-
-
-	public bool IsCameraMovement => isCameraMovement;
 
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start() {
@@ -140,6 +158,8 @@ public class Player : MonoBehaviour {
 		}
 
 		moveRotation = Quaternion.Euler(0.0f, transform.eulerAngles.y, 0.0f);
+
+		currentSpacePutCount = 0;
 	}
 
 	// Update is called once per frame
@@ -158,18 +178,20 @@ public class Player : MonoBehaviour {
 		// 地面に着いているかの判定を行う
 		if (IsGrounded()) {
 			isGrounded = true;
-			totalAngleX = 0.0f;
-			totalAngleY = 0.0f;
-
+			
 			// 前フレームにトリックアクションをしていたら成功判定を行う
 			if (!prevIsGrounded) {
 				// 成功時は視聴者を増やす / 失敗したら減らす
 				information.TrickViewer(IsTrickSuccessful(), trickCountX + 1, trickCountY + 1);
 
-				rotationController.enabled = true;
-				rotationController.ResetTimer();
+				// 姿勢のリセット
+				ResetRotation();
+
+				// キーを押した回数を元に戻す
+				currentSpacePutCount = 0;
 			}
 
+			// トリックアクションをした回数を元に戻す
 			trickCountX = 0;
 			trickCountY = 0;
 
@@ -188,17 +210,13 @@ public class Player : MonoBehaviour {
 
 
 		// 回転
-		Rotate();
+		MoveRotate();
 
 		// 移動
 		Move();
 
-		// 回転数のカウント
-		RotateCount();
-
-		if (isCorrectingRotation) {
-			CorrectRotation();
-		}
+		// トリックアクションの実行
+		TrickAction();
 
 		prevIsGrounded = isGrounded;
 
@@ -223,7 +241,6 @@ public class Player : MonoBehaviour {
 				if (!isBoosCooldown) {
 					if (currentSpeed >= boostStartSpeed) {
 						isBoostMode = true;
-						Debug.Log("ブースト開始");
 					}
 
 					if (isBoostMode) {
@@ -247,7 +264,7 @@ public class Player : MonoBehaviour {
 
 				rb.linearVelocity = velocity;
 			}
-		} else if(isCameraMovement) {
+		} else {
 			// 空中ではY軸回転だけを反映した方向に進む
 			velocity.x = direction.x * currentSpeed;
 			velocity.z = direction.z * currentSpeed;
@@ -269,7 +286,6 @@ public class Player : MonoBehaviour {
 				isBoosCooldown = true;
 				boostTimer = 0;
 				boostCoolTimeBarUI.SetHighValue(boostCoolTime);
-				Debug.Log("クールダウン中");
 			}
 		}
 
@@ -290,18 +306,75 @@ public class Player : MonoBehaviour {
 
 	// 移動方向を取得する
 	private void InputReception() {
+
 		// 左右方向の指定
 		horizontal = Input.GetAxisRaw("Horizontal");
 
 		// 前方に進行する
-		if (Input.GetKey(KeyCode.Space)) {
-			vertical = 1;
+		if (isGrounded) {
+			if (Input.GetKey(KeyCode.Space)) {
+				vertical = 1;
+			} else {
+				vertical = 0;
+			}
 		} else {
-			vertical = 0;
+
+			if (IsPlayingAnimation()) {
+				return;
+			}
+
+			if (Input.GetKeyDown(KeyCode.Space)) {
+				currentSpacePutCount++;
+			}
+
+			isHorizontalTrick = CheckReverseInput();
+		}
+	}
+
+	private bool CheckReverseInput() {
+		int horizontal = (int)Input.GetAxisRaw("Horizontal");
+		int frame = Time.frameCount;
+
+		// 前回の入力条件を満たしていて、反対方向が押された場合
+		if (waitingDirection != 0) {
+
+			// 制限時間を超えたら無効
+			if (frame - lastInputFrame > reverseAcceptFrames) {
+				waitingDirection = 0;
+			} else if (horizontal == -waitingDirection) {
+				waitingDirection = 0;
+
+				// 新しい方向の入力開始
+				currentDirection = horizontal;
+				holdFrames = 1;
+				lastInputFrame = frame;
+
+				return true;
+			}
 		}
 
-		// カメラ固定を解除する
-		isCameraMovement = Input.GetButton("CameraFixed");
+		// 入力中
+		if (horizontal != 0) {
+
+			if (horizontal == currentDirection) {
+				holdFrames++;
+			} else {
+				currentDirection = horizontal;
+				holdFrames = 1;
+			}
+
+			lastInputFrame = frame;
+		} else {
+			// 一定フレーム以上押していた場合
+			if (holdFrames >= requiredHoldFrames) {
+				waitingDirection = currentDirection;
+			}
+
+			currentDirection = 0;
+			holdFrames = 0;
+		}
+
+		return false;
 	}
 
 	// 地上にいるかの判定を行う
@@ -314,26 +387,17 @@ public class Player : MonoBehaviour {
 		);
 	}
 
-	// 空中での回転
-	private void Rotate() {
-		// ベースの回転速度を設定
-		float rotateSpeedX = airRotateSpeedX;
-		float rotateSpeedY = rotateSpeed;
+	// 移動持の回転
+	private void MoveRotate() {
+		float rotateSpeedY = 0;
 
-		// 空中かどうかで回転速度を変更
-		if (!isGrounded) {
-			rotateSpeedY = airRotateSpeedY;
+		if (isGrounded) {
+			rotateSpeedY = rotateSpeed;
 		} else {
-			rotateSpeedX = 0;
+			rotateSpeedY = airRotateSpeedY;
 		}
 
-		// 回転量を求める
-		float angleX = rotateSpeedX * vertical * Time.fixedDeltaTime;
 		float angleY = rotateSpeedY * horizontal * Time.fixedDeltaTime;
-
-		// 回転量を累積
-		totalAngleX += angleX;
-		totalAngleY += angleY;
 
 		// 移動方向用のY軸回転を更新
 		moveRotation =
@@ -343,85 +407,53 @@ public class Player : MonoBehaviour {
 		Quaternion yaw =
 			Quaternion.AngleAxis(angleY, Vector3.up);
 
-		Quaternion pitch =
-			Quaternion.AngleAxis(angleX, Vector3.right);
-
-		rb.MoveRotation(yaw * rb.rotation * pitch);
+		rb.MoveRotation(yaw * rb.rotation);
 	}
 
-	// 何回転したかを取得する
-	private void RotateCount() {
-		if (!isGrounded) {
-			trickCountX = Mathf.FloorToInt(Mathf.Abs(totalAngleX) / 360.0f);
-			trickCountY = Mathf.FloorToInt(Mathf.Abs(totalAngleY) / 360.0f);
-		}
-	}
-
-	private void CorrectRotation() {
-
-		// 現在の進行方向
-		Vector3 direction = rb.linearVelocity;
-
-		// Y方向の速度を無視
-		direction.y = 0.0f;
-
-		// 速度がほとんどない場合は処理しない
-		if (direction.sqrMagnitude < 0.001f) {
+	// トリックアクションの実行
+	private void TrickAction() {
+		if (isGrounded) {
 			return;
 		}
 
-		// 進行方向を向き、上方向をワールドY軸に合わせる
-		Quaternion targetRotation =
-			Quaternion.LookRotation(direction.normalized, Vector3.up);
+		if (isHorizontalTrick) {
+			trickCountX++;
+			animator.SetTrigger("HorizontalTrick");
+			isHorizontalTrick = false;
+		}
 
-		// 現在の回転から目標回転へ補間
-		Quaternion newRotation = Quaternion.Slerp(
-			rb.rotation,
-			targetRotation,
-			rotationSpeed * Time.fixedDeltaTime
-		);
-
-		rb.MoveRotation(newRotation);
-
-		// 十分近づいたら終了
-		if (Quaternion.Angle(newRotation, targetRotation) < 35.0f) {
-			rb.MoveRotation(targetRotation);
-			isCorrectingRotation = false;
+		if (currentSpacePutCount >= spacePutCount) {
+			trickCountY++;
+			currentSpacePutCount = 0;
+			animator.SetTrigger("VerticalTrick");
 		}
 	}
 
 	// トリックアクションが成功したかどうかの判定を取る
 	private bool IsTrickSuccessful() {
-
-		bool isSuccessX = false;
-		bool isSuccessY = false;
-
-		//x軸方向のトリックアクションが成功しているかどうかを判定する
-		float dotX = Vector3.Dot(transform.up, Vector3.up);
-		if (dotX >= Mathf.Cos(toleranceAngleX * Mathf.Deg2Rad)) {
-			isSuccessX = true;
-
-		} else {
-			Debug.Log("x軸 失敗！");
+		if (IsPlayingAnimation()) {
+			Debug.Log("トリックアクション失敗!!!");
+			return false;
 		}
 
-		// y軸方向のトリックアクションが成功しているかどうかを判定する
-		float dotY = Vector3.Dot(transform.forward, jumpForwardAngle);
-		if (dotY >= Mathf.Cos(toleranceAngleY * Mathf.Deg2Rad)) {
-			isSuccessY = true;
-		} else {
-			Debug.Log("y軸 失敗！");
-		}
-
-		if (isSuccessX && isSuccessY) {
-			Debug.Log("トリックアクション成功!!");
-		}
-
-		return isSuccessX && isSuccessY;
+		Debug.Log("トリックアクション成功!!!");
+		return true;
 	}
 
+	// 姿勢を元に戻す
 	public void ResetRotation() {
 		rotationController.enabled = true;
 		rotationController.ResetTimer();
+	}
+
+	// playerの状態を元に戻す
+	private bool IsPlayingAnimation() {
+		if (animator == null) {
+			return false;
+		}
+
+		AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
+
+		return !state.IsName("PlayerIdle");
 	}
 }
