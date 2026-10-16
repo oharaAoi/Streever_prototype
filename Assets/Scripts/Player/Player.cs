@@ -75,6 +75,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private float rotationSpeed = 10.0f;
 
+	[SerializeField]
+	private BoostCoolTimeBarUI boostCoolTimeBarUI;
+
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
 
@@ -117,6 +120,12 @@ public class Player : MonoBehaviour {
 
 	public Vector3 MoveDirection => moveDirection;
 	public Quaternion MoveRotation => moveRotation;
+
+	public float BoostTime => boostTime;
+	public float BoostCoolTime => boostCoolTime;
+	public float BoostTimer => boostTimer;
+	public float BoostCoolTimer => boostCoolTimer;
+
 
 	public bool IsCameraMovement => isCameraMovement;
 
@@ -254,10 +263,12 @@ public class Player : MonoBehaviour {
 		// boostMode時の時間の計測
 		if (isBoostMode) {
 			boostTimer += Time.deltaTime;
+			boostCoolTimeBarUI.SetValue(boostTime - boostTimer);
 			if (boostTimer >= boostTime) {
 				isBoostMode = false;
 				isBoosCooldown = true;
 				boostTimer = 0;
+				boostCoolTimeBarUI.SetHighValue(boostCoolTime);
 				Debug.Log("クールダウン中");
 			}
 		}
@@ -265,11 +276,16 @@ public class Player : MonoBehaviour {
 		// boostCooldown時の時間の計測
 		if (isBoosCooldown) {
 			boostCoolTimer += Time.deltaTime;
+			boostCoolTimeBarUI.SetValue(boostCoolTimer);
 			if (boostCoolTimer >= boostCoolTime) {
 				isBoosCooldown = false;
 				boostCoolTimer = 0;
+
+				boostCoolTimeBarUI.SetHighValue(boostTime);
 			}
 		}
+
+		
 	}
 
 	// 移動方向を取得する
