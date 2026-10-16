@@ -1376,42 +1376,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 216468811}
     - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: boostSpeed
-      value: 70
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: acceleration
-      value: 14
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: deceleration
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: maxMoveSpeed
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: baseMoveSpeed
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: rotationSpeed
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: airRotateSpeedX
-      value: 500
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: airRotateSpeedY
-      value: 60
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: boostStartSpeed
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: boostCoolTimeBarUI
       value: 
       objectReference: {fileID: 216468815}

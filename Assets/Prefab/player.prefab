@@ -577,7 +577,7 @@ Rigidbody:
   m_GameObject: {fileID: 7637779348410140323}
   serializedVersion: 5
   m_Mass: 1000
-  m_LinearDamping: 0
+  m_LinearDamping: 0.2
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: -0.5, z: -1}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -610,24 +610,27 @@ MonoBehaviour:
   information: {fileID: 8428764420425565898}
   boostUI: {fileID: 0}
   rotationController: {fileID: 5142985582039764104}
-  baseMoveSpeed: 2
-  maxMoveSpeed: 65
-  boostSpeed: 80
-  boostStartSpeed: 60
+  baseMoveSpeed: 8
+  maxMoveSpeed: 50
+  boostSpeed: 70
+  boostStartSpeed: 50
   boostTime: 3
   boostCoolTime: 10
-  acceleration: 8
-  deceleration: 10
+  acceleration: 14
+  deceleration: 20
   rotateSpeed: 80
-  airRotateSpeedX: 360
-  airRotateSpeedY: 360
-  toleranceAngleX: 45
-  toleranceAngleY: 45
+  airRotateSpeedX: 500
+  airRotateSpeedY: 30
   groundCheckDistance: 3
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
-  rotationSpeed: 10
+  rotationSpeed: 3
+  boostCoolTimeBarUI: {fileID: 0}
+  animator: {fileID: 863741995664104367}
+  spacePutCount: 5
+  requiredHoldFrames: 5
+  reverseAcceptFrames: 10
   isCorrectingRotation: 0
   isGrounded: 1
 --- !u!114 &8428764420425565898
