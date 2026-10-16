@@ -51,7 +51,6 @@ public class BuildingGenerator : MonoBehaviour
 	[SerializeField]
 	private float poleOffset = 10.0f;
 
-
 	[SerializeField]
 	[Min(0)]
 	private int deliveryAddressCount = 5;
@@ -60,9 +59,23 @@ public class BuildingGenerator : MonoBehaviour
 	private readonly List<DeliveryAddress> activeAddresses = new();
 
 	private void Start() {
+		InitializeBuildings();
+
 		for (int i = 0; i < deliveryAddressCount; i++) {
 			SpawnDeliveryAddress();
 		}
+	}
+
+	private void InitializeBuildings() {
+		buildings.Clear();
+
+		foreach (Transform child in transform) {
+			if (child.name.StartsWith("Building_")) {
+				buildings.Add(child.gameObject);
+			}
+		}
+
+		Debug.Log($"建物を{buildings.Count}個取得しました");
 	}
 
 	[ContextMenu("Generate Buildings")]
