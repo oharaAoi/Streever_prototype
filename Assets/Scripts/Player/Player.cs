@@ -146,6 +146,8 @@ public class Player : MonoBehaviour {
 	// 壁に衝突したか
 	public Vector3 wallNormal = Vector3.zero;
 
+	private bool isTrickPlaying = false;
+
 	// getter関連
 	public Vector3 MoveDirection => moveDirection;
 	public Quaternion MoveRotation => moveRotation;
@@ -179,12 +181,19 @@ public class Player : MonoBehaviour {
 
 		// ブースト関連の時間の計測
 		MeasureBoostMode();
+
+		// UIに情報を渡す
+		boostUI.SetValue(rb.linearVelocity.magnitude);
 	}
 
 	// 遅れて更新
 	private void FixedUpdate() {
+
+		// 着地判定を行う
+		LandingDetection();
+
 		// 回転
-		if (!IsPlayingAnimation()) {
+		if (!isTrickPlaying) {
 			MoveRotate();
 		}
 
@@ -194,6 +203,12 @@ public class Player : MonoBehaviour {
 		// トリックアクションの実行
 		TrickAction();
 
+		prevIsGrounded = isGrounded;
+
+	}
+
+	// 着地判定処理
+	private void LandingDetection() {
 		// 地面に着いているかの判定を行う
 		if (IsGrounded()) {
 			isGrounded = true;
@@ -201,8 +216,16 @@ public class Player : MonoBehaviour {
 			// 前フレームにトリックアクションをしていたら成功判定を行う
 			if (!prevIsGrounded) {
 				// 成功時は視聴者を増やす / 失敗したら減らす
-				bool isSuccess = IsTrickSuccessful();
+				bool isSuccess = false;
+				if (!isTrickPlaying) {
+					isSuccess = true;
+					Debug.Log("トリックアクション成功");
+				} else {
+					Debug.Log("トリックアクション失敗");
+				}
+
 				information.TrickViewer(isSuccess, trickCountX + 1, trickCountY + 1);
+				isTrickPlaying = false;
 
 				// 失敗したなら失敗アニメーションを再生する
 				if (!isSuccess) {
@@ -235,12 +258,6 @@ public class Player : MonoBehaviour {
 				rotationController.enabled = false;
 			}
 		}
-
-		prevIsGrounded = isGrounded;
-
-		// UIに情報を渡す
-		boostUI.SetValue(rb.linearVelocity.magnitude);
-
 	}
 
 	// 移動する
@@ -253,7 +270,7 @@ public class Player : MonoBehaviour {
 		if (isGrounded) {
 			if (vertical == 1) {
 				// 徐々に加速する
-				currentSpeed += acceleration * Time.deltaTime;
+				currentSpeed += acceleration * Time.fixedDeltaTime;
 				currentSpeed = Mathf.Min(currentSpeed, maxMoveSpeed);
 
 				// ブーストに入る速度に達したら
@@ -275,7 +292,7 @@ public class Player : MonoBehaviour {
 			} else {
 
 				// 徐々に減速する
-				currentSpeed -= deceleration * Time.deltaTime;
+				currentSpeed -= deceleration * Time.fixedDeltaTime;
 				currentSpeed = Mathf.Max(currentSpeed, 0.0f);
 
 				velocity.x = direction.x * currentSpeed;
@@ -350,7 +367,7 @@ public class Player : MonoBehaviour {
 			}
 		} else {
 
-			if (IsPlayingAnimation()) {
+			if (isTrickPlaying) {
 				return;
 			}
 
@@ -358,7 +375,9 @@ public class Player : MonoBehaviour {
 				currentSpacePutCount++;
 			}
 
-			isHorizontalTrick = CheckReverseInput();
+			if (CheckReverseInput()) {
+				isHorizontalTrick = true;
+			}
 		}
 	}
 
@@ -444,12 +463,14 @@ public class Player : MonoBehaviour {
 
 	// トリックアクションの実行
 	private void TrickAction() {
-		if (isGrounded) {
+		if (isGrounded || isTrickPlaying) {
 			return;
 		}
 
 		if (isHorizontalTrick) {
 			trickCountX++;
+			isTrickPlaying = true;
+
 			animator.SetTrigger("HorizontalTrick");
 			isHorizontalTrick = false;
 		}
@@ -458,39 +479,19 @@ public class Player : MonoBehaviour {
 			trickCountY++;
 			currentSpacePutCount = 0;
 			animator.SetTrigger("VerticalTrick");
+			isTrickPlaying = true;
 		}
-	}
-
-	// トリックアクションが成功したかどうかの判定を取る
-	private bool IsTrickSuccessful() {
-		if (IsPlayingAnimation()) {
-			Debug.Log("トリックアクション失敗!!!");
-			return false;
-		}
-
-		Debug.Log("トリックアクション成功!!!");
-		return true;
 	}
 
 	// トリックアクションをおこなった時に加速させる
 	public void FinishTrick() {
 		currentSpeed += trickAcceleration;
+		isTrickPlaying = false;
 	}
 
 	// 姿勢を元に戻す
 	public void ResetRotation() {
 		rotationController.enabled = true;
 		rotationController.ResetTimer();
-	}
-
-	// playerの状態を元に戻す
-	private bool IsPlayingAnimation() {
-		if (animator == null) {
-			return false;
-		}
-
-		AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
-
-		return !state.IsName("PlayerIdle");
 	}
 }
