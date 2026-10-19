@@ -42,9 +42,13 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private float acceleration = 1.0f;
 
-	// 加速度
+	// 減速度
 	[SerializeField]
 	private float deceleration = 1.0f;
+
+	// トリックアクション時の加速度
+	[SerializeField]
+	private float trickAcceleration = 5.0f;
 
 	// 進行方向回転
 	[SerializeField]
@@ -468,6 +472,10 @@ public class Player : MonoBehaviour {
 
 		Debug.Log("トリックアクション成功!!!");
 		return true;
+	}
+
+	public void FinishTrick() {
+		currentSpeed += trickAcceleration;
 	}
 
 	// 姿勢を元に戻す
