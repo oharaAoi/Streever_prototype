@@ -611,9 +611,9 @@ MonoBehaviour:
   boostUI: {fileID: 0}
   rotationController: {fileID: 5142985582039764104}
   baseMoveSpeed: 8
-  maxMoveSpeed: 50
-  boostSpeed: 70
-  boostStartSpeed: 50
+  maxMoveSpeed: 35
+  boostSpeed: 50
+  boostStartSpeed: 35
   boostTime: 3
   boostCoolTime: 10
   acceleration: 14
@@ -633,6 +633,7 @@ MonoBehaviour:
   reverseAcceptFrames: 10
   isCorrectingRotation: 0
   isGrounded: 1
+  wallNormal: {x: 0, y: 0, z: 0}
 --- !u!114 &8428764420425565898
 MonoBehaviour:
   m_ObjectHideFlags: 0

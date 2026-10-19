@@ -27,16 +27,20 @@ public class PlayerCollisionCallback : MonoBehaviour
 			}
 		}
 
-		// É|Å[ÉãÇ…Ç†ÇΩÇ¡ÇΩç€ÇÃèàóù
-		if (other.tag == "Pole") {
-			if (!player.isGrounded) {
-				if (animator != null) {
-					animator.SetTrigger("PoleHit");
-					player.isCorrectingRotation = true;
-				}
+	}
+
+	private void OnCollisionStay(Collision collision) {
+		foreach (ContactPoint contact in collision.contacts) {
+			// ï«Ç∆îªíË
+			if (Mathf.Abs(contact.normal.y) < 0.2f) {
+				player.wallNormal = contact.normal;
+				break;
 			}
 		}
+	}
 
+	private void OnCollisionExit(Collision collision) {
+		player.wallNormal = Vector3.zero;
 	}
 
 }

@@ -133,10 +133,14 @@ public class Player : MonoBehaviour {
 	// 移動方向を決めるY軸回転
 	private Quaternion moveRotation = Quaternion.identity;
 
+	// 移動方向
 	private Vector3 moveDirection;
 
-
+	// spaceを何回押したか
 	private int currentSpacePutCount = 0;
+
+	// 壁に衝突したか
+	public Vector3 wallNormal = Vector3.zero;
 
 	// getter関連
 	public Vector3 MoveDirection => moveDirection;
@@ -175,20 +179,43 @@ public class Player : MonoBehaviour {
 
 	// 遅れて更新
 	private void FixedUpdate() {
+		
+
+
+		// 回転
+		if (!IsPlayingAnimation()) {
+			MoveRotate();
+		}
+
+		// 移動
+		Move();
+
+		// トリックアクションの実行
+		TrickAction();
+
 		// 地面に着いているかの判定を行う
 		if (IsGrounded()) {
 			isGrounded = true;
-			
+
 			// 前フレームにトリックアクションをしていたら成功判定を行う
 			if (!prevIsGrounded) {
 				// 成功時は視聴者を増やす / 失敗したら減らす
-				information.TrickViewer(IsTrickSuccessful(), trickCountX + 1, trickCountY + 1);
+				bool isSuccess = IsTrickSuccessful();
+				information.TrickViewer(isSuccess, trickCountX + 1, trickCountY + 1);
+
+				// 失敗したなら失敗アニメーションを再生する
+				if (!isSuccess) {
+					animator.SetTrigger("TrickFailuer");
+				}
 
 				// 姿勢のリセット
 				ResetRotation();
 
 				// キーを押した回数を元に戻す
 				currentSpacePutCount = 0;
+
+				// トリックアクションを行うフラグもfalseにする
+				isHorizontalTrick = false;
 			}
 
 			// トリックアクションをした回数を元に戻す
@@ -208,20 +235,11 @@ public class Player : MonoBehaviour {
 			}
 		}
 
-
-		// 回転
-		MoveRotate();
-
-		// 移動
-		Move();
-
-		// トリックアクションの実行
-		TrickAction();
-
 		prevIsGrounded = isGrounded;
 
 		// UIに情報を渡す
 		boostUI.SetValue(rb.linearVelocity.magnitude);
+
 	}
 
 	// 移動する
@@ -265,10 +283,22 @@ public class Player : MonoBehaviour {
 				rb.linearVelocity = velocity;
 			}
 		} else {
-			// 空中ではY軸回転だけを反映した方向に進む
-			velocity.x = direction.x * currentSpeed;
-			velocity.z = direction.z * currentSpeed;
+			// 空中での移動速度
+			Vector3 horizontalVelocity = direction * currentSpeed;
 
+			// 壁に衝突している場合
+			if (wallNormal != Vector3.zero) {
+				// 壁に向かう速度成分を除去
+				if (Vector3.Dot(horizontalVelocity, wallNormal) < 0.0f) {
+					horizontalVelocity =
+						Vector3.ProjectOnPlane(horizontalVelocity, wallNormal);
+				}
+			}
+
+			velocity.x = horizontalVelocity.x;
+			velocity.z = horizontalVelocity.z;
+
+			// Y方向の速度は維持
 			rb.linearVelocity = velocity;
 		}
 
