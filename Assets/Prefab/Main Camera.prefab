@@ -107,5 +107,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FollowCamera
   target: {fileID: 0}
   player: {fileID: 0}
-  offset: {x: 0, y: 3, z: -8}
-  smoothTime: 0.1
+  offset: {x: 0, y: 5, z: -15}
+  smoothTime: 0.15

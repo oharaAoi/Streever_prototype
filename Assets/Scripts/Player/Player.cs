@@ -183,9 +183,6 @@ public class Player : MonoBehaviour {
 
 	// 遅れて更新
 	private void FixedUpdate() {
-		
-
-
 		// 回転
 		if (!IsPlayingAnimation()) {
 			MoveRotate();
@@ -365,6 +362,7 @@ public class Player : MonoBehaviour {
 		}
 	}
 
+	// ハンドルが反対方向に入力されたかを取得する
 	private bool CheckReverseInput() {
 		int horizontal = (int)Input.GetAxisRaw("Horizontal");
 		int frame = Time.frameCount;
@@ -474,6 +472,7 @@ public class Player : MonoBehaviour {
 		return true;
 	}
 
+	// トリックアクションをおこなった時に加速させる
 	public void FinishTrick() {
 		currentSpeed += trickAcceleration;
 	}

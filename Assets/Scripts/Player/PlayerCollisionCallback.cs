@@ -27,6 +27,16 @@ public class PlayerCollisionCallback : MonoBehaviour
 			}
 		}
 
+		// Pole‚É‚ ‚½‚Á‚½‚Ìˆ—
+		//if (other.tag == "Pole") {
+		//	if (!player.isGrounded) {
+		//		if (animator != null) {
+		//			animator.SetTrigger("PoleHit");
+		//			player.isCorrectingRotation = true;
+		//		}
+
+		//	}
+		//}
 	}
 
 	private void OnCollisionStay(Collision collision) {

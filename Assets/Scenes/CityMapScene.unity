@@ -10758,18 +10758,6 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 134627020}
-    - target: {fileID: 7987249073385504349, guid: fb92b11ddfe057c4e96794060b74603b, type: 3}
-      propertyPath: offset.y
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 7987249073385504349, guid: fb92b11ddfe057c4e96794060b74603b, type: 3}
-      propertyPath: offset.z
-      value: -14
-      objectReference: {fileID: 0}
-    - target: {fileID: 7987249073385504349, guid: fb92b11ddfe057c4e96794060b74603b, type: 3}
-      propertyPath: smoothTime
-      value: 0.15
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
