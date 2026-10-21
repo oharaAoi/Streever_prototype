@@ -1917,8 +1917,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 216468811}
     - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
+      propertyPath: maxMoveSpeed
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: spacePutCount
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
+      propertyPath: boostStartSpeed
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: boostCoolTimeBarUI

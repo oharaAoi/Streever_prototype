@@ -42,4 +42,11 @@ public class BoostBarUI : MonoBehaviour
 		progressBar.value = value;
 	}
 
+	public void SetHighValue(float value) {
+		if (progressBar == null)
+			return;
+
+		progressBar.highValue = value;
+	}
+
 }

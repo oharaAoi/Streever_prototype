@@ -89,6 +89,13 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private int reverseAcceptFrames = 10;
 
+	// トリックアクションをしてxフレーム以内に着地をした化
+	[SerializeField]
+	private int landingBoostFrame = 30;
+
+	[SerializeField]
+	private int landingBoostSpeed = 10;
+
 
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
@@ -146,7 +153,14 @@ public class Player : MonoBehaviour {
 	// 壁に衝突したか
 	public Vector3 wallNormal = Vector3.zero;
 
+	// トリックアクション中か
 	private bool isTrickPlaying = false;
+
+	// トリックアクションを終了してからのフレームカウント
+	private int trickFinishFrameCount = 0;
+
+	// トリックアクションを終了したか
+	private bool isFinishTrick = false;
 
 	// getter関連
 	public Vector3 MoveDirection => moveDirection;
@@ -184,6 +198,7 @@ public class Player : MonoBehaviour {
 
 		// UIに情報を渡す
 		boostUI.SetValue(rb.linearVelocity.magnitude);
+		boostUI.SetHighValue(maxMoveSpeed);
 	}
 
 	// 遅れて更新
@@ -193,10 +208,8 @@ public class Player : MonoBehaviour {
 		LandingDetection();
 
 		// 回転
-		if (!isTrickPlaying) {
-			MoveRotate();
-		}
-
+		MoveRotate();
+		
 		// 移動
 		Move();
 
@@ -205,6 +218,9 @@ public class Player : MonoBehaviour {
 
 		prevIsGrounded = isGrounded;
 
+		if (isFinishTrick) {
+			trickFinishFrameCount++;
+		}
 	}
 
 	// 着地判定処理
@@ -223,6 +239,14 @@ public class Player : MonoBehaviour {
 				} else {
 					Debug.Log("トリックアクション失敗");
 				}
+
+				// トリックアクションをしてからxフレーム以内に着地をするとブーストをする
+				if (trickFinishFrameCount < landingBoostFrame) {
+					currentSpeed += landingBoostSpeed;
+					Debug.Log("加速しました");
+				}
+				trickFinishFrameCount = 0;
+				isFinishTrick = false;
 
 				information.TrickViewer(isSuccess, trickCountX + 1, trickCountY + 1);
 				isTrickPlaying = false;
@@ -271,7 +295,15 @@ public class Player : MonoBehaviour {
 			if (vertical == 1) {
 				// 徐々に加速する
 				currentSpeed += acceleration * Time.fixedDeltaTime;
-				currentSpeed = Mathf.Min(currentSpeed, maxMoveSpeed);
+
+				// 上限を超えたら徐々に減速するようにする
+				if (currentSpeed > maxMoveSpeed) {
+					currentSpeed = Mathf.MoveTowards(
+						currentSpeed,
+						maxMoveSpeed,
+						deceleration * Time.fixedDeltaTime
+					);
+				}
 
 				// ブーストに入る速度に達したら
 				if (!isBoosCooldown) {
@@ -470,6 +502,8 @@ public class Player : MonoBehaviour {
 		if (isHorizontalTrick) {
 			trickCountX++;
 			isTrickPlaying = true;
+			trickFinishFrameCount = 0;
+			isFinishTrick = false;
 
 			animator.SetTrigger("HorizontalTrick");
 			isHorizontalTrick = false;
@@ -478,6 +512,8 @@ public class Player : MonoBehaviour {
 		if (currentSpacePutCount >= spacePutCount) {
 			trickCountY++;
 			currentSpacePutCount = 0;
+			trickFinishFrameCount = 0;
+			isFinishTrick = false;
 			animator.SetTrigger("VerticalTrick");
 			isTrickPlaying = true;
 		}
@@ -487,6 +523,7 @@ public class Player : MonoBehaviour {
 	public void FinishTrick() {
 		currentSpeed += trickAcceleration;
 		isTrickPlaying = false;
+		isFinishTrick = true;
 	}
 
 	// 姿勢を元に戻す
