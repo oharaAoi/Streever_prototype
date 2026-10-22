@@ -28,6 +28,7 @@ public class Sniper : MonoBehaviour
     private GameObject line;
 
     private Image chargeCircleImage;
+    private GameObject circleObject;
 
 	private float fireTimer = 0;
 
@@ -40,11 +41,13 @@ public class Sniper : MonoBehaviour
 
 		Canvas canvas = FindAnyObjectByType<Canvas>();
 		if (chargeGauge) {
-            GameObject circle = Instantiate(chargeGauge, canvas.transform);
-			chargeCircleImage = circle.GetComponent<Image>();
+			circleObject = Instantiate(chargeGauge, canvas.transform);
+			chargeCircleImage = circleObject.GetComponent<Image>();
         }
 
 		mainCamera = Camera.main;
+
+        circleObject.SetActive(false);
 	}
 
     // Update is called once per frame
@@ -94,6 +97,7 @@ public class Sniper : MonoBehaviour
         target = targetTransform;
 
         if (target) {
+			circleObject.SetActive(true);
 			// ê¸ÇÃê∂ê¨
 			line = Instantiate(linePrefab,
                         new Vector3(0, 0, 0),
@@ -106,8 +110,9 @@ public class Sniper : MonoBehaviour
 			shotLine.SetPosition(1, target.transform.position);
         } else {
 			fireTimer = 0;
+            circleObject.SetActive(false);
 
-            Destroy(line);
+			Destroy(line);
 		}
 	}
 

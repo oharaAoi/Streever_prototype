@@ -103,6 +103,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private float fallSpeed = 10.0f;
 
+	[SerializeField, Header("スナイパーの攻撃を回避した時の増える視聴者数")]
+	private int sniperAvoidIncrease = 100;
+
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
 
@@ -609,6 +612,7 @@ public class Player : MonoBehaviour {
 	public void Stan(float _stanTime) {
 		if (isTrickPlaying) {
 			slowMotion.StartSlowMotion();
+			information.IncreaseViewership(sniperAvoidIncrease);
 
 			Debug.Log("スタンを回避しました");
 			return;

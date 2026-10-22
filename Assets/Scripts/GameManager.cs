@@ -35,7 +35,6 @@ public class GameManager : MonoBehaviour
     public void ChangeScene()
     {
         // ResultSceneに渡す情報を保存
-        ResultData.HaveMoney = playerInformation.haveMoney;
         ResultData.Viewership = playerInformation.viewership;
 
         // Scene切り替え

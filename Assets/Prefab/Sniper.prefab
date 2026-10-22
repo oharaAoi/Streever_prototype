@@ -70,9 +70,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Snaiper
   linePrefab: {fileID: 2503953178199005507, guid: 27aa576017437084995395889dd154ca, type: 3}
   chargeGauge: {fileID: 3037532211767359845, guid: d826eed0da2c79446839733c955bce68, type: 3}
-  fireTime: 3
+  fireTime: 4
   stanTime: 1
-  chargeGaugeLength: 0.1
+  chargeGaugeLength: 0.05
 --- !u!114 &712918100165290474
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -3,14 +3,9 @@ using UnityEngine;
 public class PlayerInformation : MonoBehaviour
 {
 
-    [SerializeField]
-	private HaveMoneyUI haveMoneyUI;
-
 	[SerializeField]
 	private ViewerShipUI viewerShipUI;
 
-	// Š‹à
-	public int haveMoney = 0;
 
     // ‹’®Ò”
     public int viewership = 0;
@@ -27,10 +22,6 @@ public class PlayerInformation : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if(haveMoneyUI != null) {
-            haveMoneyUI.SetValue(haveMoney);
-		}
-
         if(viewerShipUI != null) {
 			viewerShipUI.SetValue(viewership);
 		}
@@ -44,5 +35,10 @@ public class PlayerInformation : MonoBehaviour
 		}
 
 		viewership = Mathf.Max(viewership, 0);
+	}
+
+	// ‹’®Ò‚ğ‘‚â‚·
+	public void IncreaseViewership(int num) {
+		viewership += num;
 	}
 }

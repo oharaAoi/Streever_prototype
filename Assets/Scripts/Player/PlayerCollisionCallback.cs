@@ -21,7 +21,6 @@ public class PlayerCollisionCallback : MonoBehaviour
 			if (address != null) {
 				PlayerInformation info = GetComponent<PlayerInformation>();
 				if (info != null) {
-					info.haveMoney += address.GetDeliveryFree() + info.viewership;
 					info.viewership += address.GetIncreaseViewership();
 				}
 			}
