@@ -96,6 +96,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private int landingBoostSpeed = 10;
 
+	// 落下速度
+	[SerializeField]
+	private float fallSpeed = 10.0f;
 
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
@@ -162,6 +165,13 @@ public class Player : MonoBehaviour {
 	// トリックアクションを終了したか
 	private bool isFinishTrick = false;
 
+	// 落下するかどうか
+	private bool isFall = false;
+
+	private bool isStan = false;
+	private float stanTime = 0;
+	private float stanTimer = 0; 
+
 	// getter関連
 	public Vector3 MoveDirection => moveDirection;
 	public Quaternion MoveRotation => moveRotation;
@@ -184,10 +194,16 @@ public class Player : MonoBehaviour {
 		moveRotation = Quaternion.Euler(0.0f, transform.eulerAngles.y, 0.0f);
 
 		currentSpacePutCount = 0;
+
+		isFall = false;
 	}
 
 	// Update is called once per frame
 	void Update() {
+		if (isStan) {
+			return;
+		}
+
 		if (!isCorrectingRotation) {
 			// 入力受付
 			InputReception();
@@ -207,14 +223,30 @@ public class Player : MonoBehaviour {
 		// 着地判定を行う
 		LandingDetection();
 
-		// 回転
-		MoveRotate();
-		
-		// 移動
-		Move();
+		if (isStan) {
+			stanTimer += Time.deltaTime;
+			if(stanTimer >= stanTime) {
+				isStan = false;
+				stanTimer = 0;
+			}
 
-		// トリックアクションの実行
-		TrickAction();
+			Fall();
+			return;
+		}
+
+		if (isFall) {
+			Fall();
+
+		} else {
+			// 回転
+			MoveRotate();
+
+			// 移動
+			Move();
+
+			// トリックアクションの実行
+			TrickAction();
+		}
 
 		prevIsGrounded = isGrounded;
 
@@ -228,6 +260,19 @@ public class Player : MonoBehaviour {
 		// 地面に着いているかの判定を行う
 		if (IsGrounded()) {
 			isGrounded = true;
+			isFall = false;
+
+			if (isStan) {
+				trickCountX = 0;
+				trickCountY = 0;
+				currentSpacePutCount = 0;
+				isHorizontalTrick = false;
+				trickFinishFrameCount = 0;
+				isFinishTrick = false;
+				isTrickPlaying = false;
+				animator.SetTrigger("TrickFailuer");
+				return;
+			}
 
 			// 前フレームにトリックアクションをしていたら成功判定を行う
 			if (!prevIsGrounded) {
@@ -355,6 +400,20 @@ public class Player : MonoBehaviour {
 		moveDirection = direction;
 	}
 
+	// 落下処理
+	private void Fall() {
+		Vector3 velocity = rb.linearVelocity;
+
+		// XZ方向の移動を停止
+		velocity.x = 0.0f;
+		velocity.z = 0.0f;
+
+		// Y方向に落下速度を加算
+		velocity.y -= fallSpeed * Time.fixedDeltaTime;
+
+		rb.linearVelocity = velocity;
+	}
+
 	// ブースト関連の時間の計測
 	private void MeasureBoostMode() {
 		// boostMode時の時間の計測
@@ -403,12 +462,23 @@ public class Player : MonoBehaviour {
 				return;
 			}
 
+			if (isFall) {
+				return;
+			}
+
+			// 縦回転の入力
 			if (Input.GetKeyDown(KeyCode.Space)) {
 				currentSpacePutCount++;
 			}
 
+			// 横回転をするかどうかの入力
 			if (CheckReverseInput()) {
 				isHorizontalTrick = true;
+			}
+
+			// 落下するかどうかの入力
+			if (Input.GetButtonDown("Fall")) {
+				isFall = true;
 			}
 		}
 	}
@@ -530,5 +600,17 @@ public class Player : MonoBehaviour {
 	public void ResetRotation() {
 		rotationController.enabled = true;
 		rotationController.ResetTimer();
+	}
+
+	// playerをスタンさせる
+	public void Stan(float _stanTime) {
+		if (isStan) { return; }
+		isStan = true;
+		stanTime = _stanTime;
+		stanTimer = 0;
+
+		currentSpeed = 0;
+
+		Debug.Log("スタンしました");
 	}
 }

@@ -61,10 +61,6 @@ public class BuildingGenerator : MonoBehaviour
 
 	private void Start() {
 		InitializeBuildings();
-
-		for (int i = 0; i < deliveryAddressCount; i++) {
-			SpawnDeliveryAddress();
-		}
 	}
 
 	private void InitializeBuildings() {
@@ -153,7 +149,6 @@ public class BuildingGenerator : MonoBehaviour
                         depth
                     );
 
-
                 // ビルのサイズを設定
                 building.transform.localScale =
                     new Vector3(width, height, depth);
@@ -178,6 +173,9 @@ public class BuildingGenerator : MonoBehaviour
 
                 // リストに追加
                 buildings.Add(building);
+
+				// レイヤーの設定
+				building.layer = 7;
 
 				// 建物1個につきPoleを1個生成
 				SpawnPole(building, width, depth);
@@ -210,78 +208,78 @@ public class BuildingGenerator : MonoBehaviour
 		activeAddresses.Clear();
 	}
 
-	// 配達先を1個生成
-	public void SpawnDeliveryAddress() {
-		if (deliveryAddressPrefab == null || buildings.Count == 0)
-			return;
+	//// 配達先を1個生成
+	//public void SpawnDeliveryAddress() {
+	//	if (deliveryAddressPrefab == null || buildings.Count == 0)
+	//		return;
 
-		// 現在配達先が配置されていないビルを取得
-		List<GameObject> candidates = new();
+	//	// 現在配達先が配置されていないビルを取得
+	//	List<GameObject> candidates = new();
 
-		foreach (GameObject building in buildings) {
-			if (building == null)
-				continue;
+	//	foreach (GameObject building in buildings) {
+	//		if (building == null)
+	//			continue;
 
-			bool hasAddress = false;
+	//		bool hasAddress = false;
 
-			foreach (DeliveryAddress address in activeAddresses) {
-				if (address != null &&
-					address.transform.parent == building.transform) {
-					hasAddress = true;
-					break;
-				}
-			}
+	//		foreach (DeliveryAddress address in activeAddresses) {
+	//			if (address != null &&
+	//				address.transform.parent == building.transform) {
+	//				hasAddress = true;
+	//				break;
+	//			}
+	//		}
 
-			if (!hasAddress)
-				candidates.Add(building);
-		}
+	//		if (!hasAddress)
+	//			candidates.Add(building);
+	//	}
 
-		if (candidates.Count == 0)
-			return;
+	//	if (candidates.Count == 0)
+	//		return;
 
-		// ランダムにビルを選択
-		int index = Random.Range(0, candidates.Count);
-		GameObject targetBuilding = candidates[index];
+	//	// ランダムにビルを選択
+	//	int index = Random.Range(0, candidates.Count);
+	//	GameObject targetBuilding = candidates[index];
 
-		// 配達先を生成
-		GameObject deliveryAddress = Instantiate(
-			deliveryAddressPrefab,
-			targetBuilding.transform
-		);
+	//	// 配達先を生成
+	//	GameObject deliveryAddress = Instantiate(
+	//		deliveryAddressPrefab,
+	//		targetBuilding.transform
+	//	);
 
-		deliveryAddress.transform.localPosition =
-			new Vector3(0f, 0.5f, 0f);
+	//	deliveryAddress.transform.localPosition =
+	//		new Vector3(0f, 0.5f, 0f);
 
-		deliveryAddress.transform.localRotation =
-			Quaternion.identity;
+	//	deliveryAddress.transform.localRotation =
+	//		Quaternion.identity;
 
-		// Prefabに付いているDeliveryAddressを取得
-		DeliveryAddress addressComponent =
-			deliveryAddress.GetComponent<DeliveryAddress>();
+	//	// Prefabに付いているDeliveryAddressを取得
+	//	DeliveryAddress addressComponent =
+	//		deliveryAddress.GetComponent<DeliveryAddress>();
 
-		if (addressComponent != null) {
-			addressComponent.Initialize(this);
-			activeAddresses.Add(addressComponent);
-		}
+	//	if (addressComponent != null) {
+	//		addressComponent.Initialize(this);
+	//		activeAddresses.Add(addressComponent);
+	//	}
 
-		// UIをCanvasの子として生成
-		if (markerPrefab != null &&
-			canvasRect != null &&
-			targetCamera != null) {
+	//	// UIをCanvasの子として生成
+	//	if (markerPrefab != null &&
+	//		canvasRect != null &&
+	//		targetCamera != null) {
 
-			WorldTargetUI marker = Instantiate(
-				markerPrefab,
-				canvasRect
-			);
+	//		WorldTargetUI marker = Instantiate(
+	//			markerPrefab,
+	//			canvasRect
+	//		);
 
-			// 配達先を追従対象に設定
-			marker.Initialize(
-				deliveryAddress.transform,
-				targetCamera,
-				canvasRect
-			);
-		}
-	}
+	//		// 配達先を追従対象に設定
+	//		marker.Initialize(
+	//			deliveryAddress.transform,
+	//			targetCamera,
+	//			canvasRect
+	//		);
+	//	}
+	//}
 
 	// 配達完了時に呼び出す
 	public void CompleteDelivery(DeliveryAddress address) {
@@ -296,7 +294,7 @@ public class BuildingGenerator : MonoBehaviour
 		Destroy(address.gameObject);
 
 		// 新しい配達先を1個追加
-		SpawnDeliveryAddress();
+		//SpawnDeliveryAddress();
 	}
 
 	// 建物1個につきPoleを1個生成する
