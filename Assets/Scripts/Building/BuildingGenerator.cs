@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.AI;
 
 public class BuildingGenerator : MonoBehaviour
 {
@@ -152,8 +153,31 @@ public class BuildingGenerator : MonoBehaviour
                         depth
                     );
 
-				// リストに追加
-				buildings.Add(building);
+
+                // ビルのサイズを設定
+                building.transform.localScale =
+                    new Vector3(width, height, depth);
+
+                // NavMeshObstacleを追加
+                NavMeshObstacle obstacle =
+                    building.AddComponent<NavMeshObstacle>();
+
+                // 障害物の形をBoxにする
+                obstacle.shape = NavMeshObstacleShape.Box;
+
+                // Cubeのローカル形状に合わせる
+                // TransformのScaleが実際の大きさに反映される
+                obstacle.center = Vector3.zero;
+                obstacle.size = Vector3.one;
+
+                // NavMeshに穴を開ける
+                obstacle.carving = true;
+
+				// 静止しているときにCarveする
+				obstacle.carveOnlyStationary = true;
+
+                // リストに追加
+                buildings.Add(building);
 
 				// 建物1個につきPoleを1個生成
 				SpawnPole(building, width, depth);
