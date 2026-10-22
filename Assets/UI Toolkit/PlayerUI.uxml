@@ -2,6 +2,6 @@
     <ui:ProgressBar value="61.6" title="boost" name="BoostBar" high-value="60" enabled="true" style="height: 48px; width: 422px; align-self: stretch; scale: 1.5 1.5; transform-origin: left top; translate: 37px 869px; flex-direction: column-reverse; align-items: stretch; color: rgb(0, 0, 0); -unity-material: url(&quot;&quot;); -unity-background-image-tint-color: rgb(255, 0, 0); border-left-color: rgb(255, 0, 0); border-right-color: rgb(255, 0, 0); border-top-color: rgb(255, 0, 0); border-bottom-color: rgb(255, 0, 0);"/>
     <ui:Label text="視聴者数 : " name="Viewership" style="font-size: 64px; width: 329px; color: rgb(255, 255, 255); translate: 42px 729px;"/>
     <ui:Label text="Label" name="ViewershipValue" style="font-size: 64px; color: rgb(255, 255, 255); width: 337px; translate: 369px 639px;"/>
-    <ui:Label text="Label" name="GameTime" style="font-size: 64px; color: rgb(255, 46, 30); width: 277px; -unity-text-align: upper-center; translate: 831px -406px;"/>
-    <ui:ProgressBar value="22" title="BoostCoolTime" name="BoostCoolTimeBar" style="width: 448px; translate: 52px 646px; height: 37px;"/>
+    <ui:Label text="Label" name="GameTime" style="font-size: 64px; color: rgb(255, 46, 30); width: 277px; -unity-text-align: upper-center; translate: 866px -183px;"/>
+    <ui:ProgressBar value="22" title="BoostCoolTime" name="BoostCoolTimeBar" style="width: 448px; translate: 33px 646px; height: 37px;"/>
 </ui:UXML>
