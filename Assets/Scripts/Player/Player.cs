@@ -14,6 +14,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private PlayerRotationController rotationController;
 
+	[SerializeField]
+	private SlowMotion slowMotion;
+
 	// 基本速度
 	[SerializeField]
 	private float baseMoveSpeed = 5;
@@ -604,6 +607,13 @@ public class Player : MonoBehaviour {
 
 	// playerをスタンさせる
 	public void Stan(float _stanTime) {
+		if (isTrickPlaying) {
+			slowMotion.StartSlowMotion();
+
+			Debug.Log("スタンを回避しました");
+			return;
+		}
+
 		if (isStan) { return; }
 		isStan = true;
 		stanTime = _stanTime;

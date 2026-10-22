@@ -6,6 +6,7 @@ TagManager:
   tags:
   - building
   - Pole
+  - Sniper
   layers:
   - Default
   - TransparentFX

@@ -537,6 +537,7 @@ GameObject:
   - component: {fileID: 8428764420425565898}
   - component: {fileID: 6918108273942144436}
   - component: {fileID: 5142985582039764104}
+  - component: {fileID: 943708081496162563}
   m_Layer: 0
   m_Name: player
   m_TagString: Player
@@ -623,10 +624,11 @@ MonoBehaviour:
   information: {fileID: 8428764420425565898}
   boostUI: {fileID: 0}
   rotationController: {fileID: 5142985582039764104}
+  slowMotion: {fileID: 943708081496162563}
   baseMoveSpeed: 8
-  maxMoveSpeed: 40
-  boostSpeed: 50
-  boostStartSpeed: 40
+  maxMoveSpeed: 50
+  boostSpeed: 60
+  boostStartSpeed: 50
   boostTime: 3
   boostCoolTime: 10
   acceleration: 14
@@ -696,3 +698,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerRotationController
   restoreDelay: 1
   restoreSpeed: 5
+--- !u!114 &943708081496162563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7637779348410140323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f083ae023c315d4c85e4b3c651319e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlowMotion
+  slowScale: 0.2
+  slowDuration: 0.5
