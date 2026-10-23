@@ -19,6 +19,9 @@ public class Sniper : MonoBehaviour
 	[SerializeField, Header("チャージゲージをどの程度の近さにするか")]
 	private float chargeGaugeLength = 0.9f;
 
+    [SerializeField, Header("射撃のクールタイム")]
+    private float sniperShotCoolTime = 0.0f;
+
 	// ------------------------------------------------------------------
 
 	private GameObject target;
@@ -31,6 +34,10 @@ public class Sniper : MonoBehaviour
     private GameObject circleObject;
 
 	private float fireTimer = 0;
+
+    private float sniperCoolTimer = 0;
+
+    private bool isShotCoolTime = false;
 
 	private Camera mainCamera;
 
@@ -48,6 +55,8 @@ public class Sniper : MonoBehaviour
 		mainCamera = Camera.main;
 
         circleObject.SetActive(false);
+
+		sniperCoolTimer = 0;
 	}
 
     // Update is called once per frame
@@ -65,6 +74,19 @@ public class Sniper : MonoBehaviour
 			chargeCircleImage.enabled = true;
 		}
 
+        if (isShotCoolTime) {
+			sniperCoolTimer += Time.deltaTime;
+            if(sniperCoolTimer >= sniperShotCoolTime) {
+                isShotCoolTime = false;
+                sniperCoolTimer = 0;
+
+				// UIの有効化
+				shotLine.enabled = true;
+			}
+
+            return;
+		}
+
         // ターゲットが見つかっている場合
         if (target) {
             fireTimer += Time.deltaTime;
@@ -74,7 +96,14 @@ public class Sniper : MonoBehaviour
                 // playerをスタンさせる
                 Player player = target.GetComponent<Player>();
                 player.Stan(stanTime);
-            }
+
+                // クールタイムに入る
+                isShotCoolTime = true;
+                sniperCoolTimer = 0;
+
+                // UIを非表示にしておく
+                shotLine.enabled = false;
+			}
 
             shotLine.SetPosition(1, target.transform.position);
         }
@@ -83,6 +112,7 @@ public class Sniper : MonoBehaviour
         if (chargeCircleImage != null) {
 			chargeCircleImage.fillAmount = fireTimer / fireTime;
 
+            // 画像の位置を計算する
 			Vector3 centerPosition = Vector3.Lerp(target.transform.position, transform.position, chargeGaugeLength);
 
 			Vector3 screenPosition =

@@ -73,6 +73,7 @@ MonoBehaviour:
   fireTime: 4
   stanTime: 1
   chargeGaugeLength: 0.05
+  sniperShotCoolTime: 3
 --- !u!114 &712918100165290474
 MonoBehaviour:
   m_ObjectHideFlags: 0

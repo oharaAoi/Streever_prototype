@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using UnityEngine.AI;
+using static UnityEngine.GraphicsBuffer;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyChaser : MonoBehaviour
@@ -26,8 +27,22 @@ public class EnemyChaser : MonoBehaviour
     [SerializeField]
     private float searchRadius = 5.0f;
 
-    private NavMeshAgent agent;
+	[Header("UI Prefab")]
+	[SerializeField]
+	private WorldTargetUI markerPrefab;
+
+	[Header("Canvas")]
+	[SerializeField]
+	private RectTransform canvasRect;
+
+	[Header("Camera")]
+	[SerializeField]
+	private Camera targetCamera;
+
+	private NavMeshAgent agent;
     private float updateTimer;
+
+    private WorldTargetUI marker;
 
     [Header("デバッグ")]
     [SerializeField]
@@ -99,7 +114,25 @@ public class EnemyChaser : MonoBehaviour
         }
 
         Debug.Log("EnemyChaser: 追跡開始");
-    }
+
+        // 追跡者のUIを表示
+		if (markerPrefab != null &&
+			canvasRect != null &&
+			targetCamera != null) {
+
+			marker = Instantiate(
+				markerPrefab,
+				canvasRect
+			);
+
+			// 配達先を追従対象に設定
+			marker.Initialize(
+				transform,
+				targetCamera,
+				canvasRect
+			);
+		}
+	}
 
     private void Update()
     {
@@ -123,7 +156,9 @@ public class EnemyChaser : MonoBehaviour
         updateTimer = 0.0f;
 
         ChasePlayer();
-    }
+
+        UpdateMarkerScale();
+	}
 
 
     private void ChasePlayer()
@@ -200,4 +235,17 @@ public class EnemyChaser : MonoBehaviour
         // 現在の経路を削除
         agent.ResetPath();
     }
+
+    // markerの更新を行う
+    private void UpdateMarkerScale() {
+		// 画像の大きさを調整する
+		float distance = Vector3.Distance(player.position, transform.position);
+
+		// 距離0～10を0～1に変換
+		float normalizedDistance = Mathf.InverseLerp(100.0f, 500.0f, distance);
+
+		float scale = Mathf.Lerp(1.0f, 0.5f, normalizedDistance);
+
+		marker.SetScale(Vector3.one * scale);
+	}
 }

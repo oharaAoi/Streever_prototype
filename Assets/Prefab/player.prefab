@@ -650,6 +650,7 @@ MonoBehaviour:
   landingBoostFrame: 30
   landingBoostSpeed: 10
   fallSpeed: 100
+  sniperAvoidIncrease: 100
   isCorrectingRotation: 0
   isGrounded: 1
   wallNormal: {x: 0, y: 0, z: 0}
@@ -665,9 +666,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d3c4c70e31a82c47b1626f2637e138c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInformation
-  haveMoneyUI: {fileID: 0}
   viewerShipUI: {fileID: 0}
-  haveMoney: 0
   viewership: 0
   trickIncreaseViewership: 100
 --- !u!114 &6918108273942144436

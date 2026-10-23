@@ -202,6 +202,9 @@ MonoBehaviour:
   stopDistance: 2
   updateInterval: 0.1
   searchRadius: 5
+  markerPrefab: {fileID: 8909337174361412416, guid: 9301dc2c57caa904997dd1147a426a48, type: 3}
+  canvasRect: {fileID: 0}
+  targetCamera: {fileID: 0}
   showDebugPath: 1
 --- !u!65 &6058549734267889592
 BoxCollider:

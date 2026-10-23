@@ -109,4 +109,8 @@ public class WorldTargetUI : MonoBehaviour {
 		// UIˆÊ’u‚ğXV
 		marker.anchoredPosition = canvasPos;
 	}
+
+	public void SetScale(Vector3 scale) {
+		marker.localScale = scale;
+	}
 }

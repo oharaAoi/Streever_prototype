@@ -20468,9 +20468,25 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 134627020}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: canvasRect
+      value: 
+      objectReference: {fileID: 617032942}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: markerPrefab
+      value: 
+      objectReference: {fileID: 8909337174361412416, guid: 9301dc2c57caa904997dd1147a426a48, type: 3}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 502533785}
     - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_Name
       value: Enemy (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -31640,15 +31656,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 307127843107340099, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 342
+      value: 369.4
       objectReference: {fileID: 0}
     - target: {fileID: 307127843107340099, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.4015999
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 307127843107340099, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.2338562
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 307127843107340099, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -31682,9 +31698,25 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 134627020}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: canvasRect
+      value: 
+      objectReference: {fileID: 617032942}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: markerPrefab
+      value: 
+      objectReference: {fileID: 8909337174361412416, guid: 9301dc2c57caa904997dd1147a426a48, type: 3}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 502533785}
     - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_Name
       value: Enemy (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -35570,6 +35602,18 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 134627020}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: canvasRect
+      value: 
+      objectReference: {fileID: 617032942}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: markerPrefab
+      value: 
+      objectReference: {fileID: 8909337174361412416, guid: 9301dc2c57caa904997dd1147a426a48, type: 3}
+    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 502533785}
     - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_Name
       value: Enemy
