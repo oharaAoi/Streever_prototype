@@ -2126,10 +2126,6 @@ PrefabInstance:
       value: player
       objectReference: {fileID: 0}
     - target: {fileID: 8428764420425565898, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
-      propertyPath: haveMoneyUI
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8428764420425565898, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: viewerShipUI
       value: 
       objectReference: {fileID: 216468809}
@@ -2139,7 +2135,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8767248744121140068, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8767248744121140068, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -20473,20 +20469,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 617032942}
     - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
-      propertyPath: markerPrefab
-      value: 
-      objectReference: {fileID: 8909337174361412416, guid: 9301dc2c57caa904997dd1147a426a48, type: 3}
-    - target: {fileID: 5497249590722647291, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: targetCamera
       value: 
       objectReference: {fileID: 502533785}
     - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
       propertyPath: m_Name
       value: Enemy (2)
-      objectReference: {fileID: 0}
-    - target: {fileID: 6371754350803474845, guid: 934a12a88ed963f4db67d5792a91ba9e, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

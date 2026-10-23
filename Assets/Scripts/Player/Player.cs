@@ -17,6 +17,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private SlowMotion slowMotion;
 
+	[SerializeField]
+	private GameObject shieldObject;
+
 	// 基本速度
 	[SerializeField]
 	private float baseMoveSpeed = 5;
@@ -106,6 +109,9 @@ public class Player : MonoBehaviour {
 	[SerializeField, Header("スナイパーの攻撃を回避した時の増える視聴者数")]
 	private int sniperAvoidIncrease = 100;
 
+	[SerializeField, Header("1回のジャンプで何人増えたらバリアをはるか")]
+	private int shieledUpNumberOfPeople = 2000;
+
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
 
@@ -176,7 +182,7 @@ public class Player : MonoBehaviour {
 
 	private bool isStan = false;
 	private float stanTime = 0;
-	private float stanTimer = 0; 
+	private float stanTimer = 0;
 
 	// getter関連
 	public Vector3 MoveDirection => moveDirection;
@@ -197,10 +203,12 @@ public class Player : MonoBehaviour {
 			Debug.Log("rigidBodyがアタッチされていません");
 		}
 
+		if (shieldObject) {
+			shieldObject.SetActive(false);
+		}
 		moveRotation = Quaternion.Euler(0.0f, transform.eulerAngles.y, 0.0f);
 
 		currentSpacePutCount = 0;
-
 		isFall = false;
 	}
 
@@ -228,6 +236,10 @@ public class Player : MonoBehaviour {
 
 		// 着地判定を行う
 		LandingDetection();
+
+		if (information.IsShieldUp(shieledUpNumberOfPeople)) {
+			shieldObject.SetActive(true);
+		}
 
 		if (isStan) {
 			stanTimer += Time.deltaTime;
@@ -610,6 +622,12 @@ public class Player : MonoBehaviour {
 
 	// playerをスタンさせる
 	public void Stan(float _stanTime) {
+
+		if (shieldObject.activeSelf) {
+			shieldObject.SetActive(false);
+			return;
+		}
+
 		if (isTrickPlaying) {
 			slowMotion.StartSlowMotion();
 			information.IncreaseViewership(sniperAvoidIncrease);
