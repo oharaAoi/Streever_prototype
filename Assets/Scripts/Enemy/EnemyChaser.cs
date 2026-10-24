@@ -1,84 +1,58 @@
 
 using UnityEngine;
 using UnityEngine.AI;
-using static UnityEngine.GraphicsBuffer;
 
 [RequireComponent(typeof(NavMeshAgent))]
 public class EnemyChaser : MonoBehaviour
 {
     [Header("追跡対象")]
-    [SerializeField]
-    private Transform player;
+    [SerializeField] private Transform player;
 
     [Header("追跡設定")]
-    [SerializeField]
-    private float chaseSpeed = 12.0f;
+    [SerializeField] private float chaseSpeed = 12.0f;
+    [SerializeField] private float chaseDistance = 200.0f;
+    [SerializeField] private float stopDistance = 2.0f;
 
-    [SerializeField]
-    private float chaseDistance = 200.0f;
+    [SerializeField, Min(0.01f)]
+    private float updateInterval = 0.3f;
 
-    [SerializeField]
-    private float stopDistance = 2.0f;
+    [SerializeField, Min(0f)]
+    private float resumeMargin = 0.75f;
 
-    [SerializeField]
-    private float updateInterval = 0.1f;
+    [SerializeField, Min(0f)]
+    private float destinationThreshold = 1.0f;
 
     [Header("NavMesh設定")]
-    [SerializeField]
+    [SerializeField, Min(0.1f)]
     private float searchRadius = 5.0f;
 
-	[Header("UI Prefab")]
-	[SerializeField]
-	private WorldTargetUI markerPrefab;
+    [Header("UI Prefab")]
+    [SerializeField] private WorldTargetUI markerPrefab;
 
-	[Header("Canvas")]
-	[SerializeField]
-	private RectTransform canvasRect;
+    [Header("Canvas")]
+    [SerializeField] private RectTransform canvasRect;
 
-	[Header("Camera")]
-	[SerializeField]
-	private Camera targetCamera;
-
-	private NavMeshAgent agent;
-    private float updateTimer;
-
-    private WorldTargetUI marker;
+    [Header("Camera")]
+    [SerializeField] private Camera targetCamera;
 
     [Header("デバッグ")]
-    [SerializeField]
-    private bool showDebugPath = true;
-    private void OnDrawGizmos()
-    {
-        if (!showDebugPath)
-            return;
+    [SerializeField] private bool showDebugPath = true;
 
-        NavMeshAgent navAgent =
-            GetComponent<NavMeshAgent>();
+    private NavMeshAgent agent;
+    private WorldTargetUI marker;
 
-        if (navAgent == null || !navAgent.isOnNavMesh)
-            return;
+    private float updateTimer;
 
-        NavMeshPath path = navAgent.path;
+    private bool hasDestination;
+    private Vector3 lastDestination;
 
-        if (path.corners.Length < 2)
-            return;
-
-        // 経路を緑色で表示
-        Gizmos.color = Color.green;
-
-        for (int i = 0; i < path.corners.Length - 1; i++)
-        {
-            Gizmos.DrawLine(
-                path.corners[i],
-                path.corners[i + 1]
-            );
-        }
-    }
-
+    private NavMeshPath reusablePath;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+
+        reusablePath = new NavMeshPath();
 
         agent.speed = chaseSpeed;
         agent.stoppingDistance = stopDistance;
@@ -88,6 +62,7 @@ public class EnemyChaser : MonoBehaviour
 
     private void Start()
     {
+        // プレイヤーを取得
         if (player == null)
         {
             Player foundPlayer =
@@ -102,46 +77,57 @@ public class EnemyChaser : MonoBehaviour
         if (player == null)
         {
             Debug.LogError(
-                "EnemyChaser: Playerが見つかりません");
+                "EnemyChaser: Playerが見つかりません",
+                this
+            );
             return;
         }
 
+        // NavMesh上にいるか確認
         if (!agent.isOnNavMesh)
         {
             Debug.LogError(
-                "EnemyChaser: EnemyがNavMesh上にいません");
-            return;
+                "EnemyChaser: EnemyがNavMesh上にいません",
+                this
+            );
+        }
+        else
+        {
+            Debug.Log(
+                "EnemyChaser: 追跡開始",
+                this
+            );
         }
 
-        Debug.Log("EnemyChaser: 追跡開始");
+        // 追跡者のUIマーカーを生成
+        if (markerPrefab != null &&
+            canvasRect != null &&
+            targetCamera != null)
+        {
+            marker = Instantiate(
+                markerPrefab,
+                canvasRect
+            );
 
-        // 追跡者のUIを表示
-		if (markerPrefab != null &&
-			canvasRect != null &&
-			targetCamera != null) {
+            marker.Initialize(
+                transform,
+                targetCamera,
+                canvasRect
+            );
+        }
 
-			marker = Instantiate(
-				markerPrefab,
-				canvasRect
-			);
-
-			// 配達先を追従対象に設定
-			marker.Initialize(
-				transform,
-				targetCamera,
-				canvasRect
-			);
-		}
-	}
+        // 最初の経路設定を遅らせない
+        updateTimer = updateInterval;
+    }
 
     private void Update()
     {
-        if (player == null)
-        {
-            return;
-        }
+        // UIマーカー更新
+        UpdateMarkerScale();
 
-        if (!agent.isOnNavMesh)
+        if (player == null ||
+            agent == null ||
+            !agent.isOnNavMesh)
         {
             return;
         }
@@ -156,72 +142,92 @@ public class EnemyChaser : MonoBehaviour
         updateTimer = 0.0f;
 
         ChasePlayer();
-
-        UpdateMarkerScale();
-	}
-
+    }
 
     private void ChasePlayer()
     {
-        // XZ平面での距離
-        Vector2 enemyXZ = new Vector2(
-            transform.position.x,
-            transform.position.z
+        // 高低差を含めた距離
+        float distance = Vector3.Distance(
+            transform.position,
+            player.position
         );
 
-        Vector2 playerXZ = new Vector2(
-            player.position.x,
-            player.position.z
-        );
-
-        float distance = Vector2.Distance(enemyXZ, playerXZ);
-
-        if (distance <= stopDistance)
+        // 停止中の処理
+        if (agent.isStopped)
+        {
+            // 停止距離に余裕を持たせる
+            if (distance <= stopDistance + resumeMargin)
+            {
+                return;
+            }
+        }
+        else if (distance <= stopDistance)
         {
             StopChase();
             return;
         }
 
-        // プレイヤーの高さは使用しない
-        Vector3 targetPosition = new Vector3(
-            player.position.x,
-            transform.position.y,
-            player.position.z
-        );
-
-        // NavMesh上の到達可能な地点を探す
-        NavMeshPath path = new NavMeshPath();
-
-        // 半径を徐々に広げて候補地点を探す
-        float[] searchRadii = { 2f, 5f, 10f, 20f, 40f };
-
-        foreach (float radius in searchRadii)
+        // 追跡可能距離を超えた場合
+        if (distance > chaseDistance)
         {
-            if (!NavMesh.SamplePosition(
-                targetPosition,
-                out NavMeshHit hit,
-                radius,
-                agent.areaMask))
-            {
-                continue;
-            }
-
-            // 完全な経路が存在するか確認
-            if (agent.CalculatePath(hit.position, path) &&
-                path.status == NavMeshPathStatus.PathComplete)
-            {
-                agent.isStopped = false;
-                agent.SetDestination(hit.position);
-                return;
-            }
+            StopChase();
+            return;
         }
 
-        // 到達可能な場所が見つからない場合、
-        // 前回の有効な経路を維持する
-        Debug.LogWarning(
-            "EnemyChaser: 到達可能なNavMeshが見つかりません"
-        );
+        // プレイヤーの高さを含めて
+        // NavMesh上の目的地を取得
+        if (!NavMesh.SamplePosition(
+            player.position,
+            out NavMeshHit hit,
+            searchRadius,
+            agent.areaMask))
+        {
+            return;
+        }
+
+        Vector3 destination = hit.position;
+
+        // 停止状態から復帰するか
+        bool restarting = agent.isStopped;
+
+        agent.isStopped = false;
+
+        // 目的地がほとんど変わらない場合は
+        // 経路を再計算しない
+        if (!restarting &&
+            hasDestination &&
+            agent.hasPath &&
+            Vector3.Distance(
+                lastDestination,
+                destination
+            ) < destinationThreshold)
+        {
+            return;
+        }
+
+        // 経路を計算
+        if (!agent.CalculatePath(
+            destination,
+            reusablePath))
+        {
+            return;
+        }
+
+        // 完全な経路か確認
+        if (reusablePath.status !=
+            NavMeshPathStatus.PathComplete)
+        {
+            return;
+        }
+
+        // 目的地を更新
+        if (agent.SetDestination(destination))
+        {
+            lastDestination = destination;
+            hasDestination = true;
+        }
     }
+
     private void StopChase()
     {
         if (agent == null || !agent.isOnNavMesh)
@@ -229,23 +235,71 @@ public class EnemyChaser : MonoBehaviour
             return;
         }
 
-        // 鬼の移動を停止
+        // 移動停止
         agent.isStopped = true;
 
-        // 現在の経路を削除
+        // 経路を削除
         agent.ResetPath();
+
+        hasDestination = false;
     }
 
-    // markerの更新を行う
-    private void UpdateMarkerScale() {
-		// 画像の大きさを調整する
-		float distance = Vector3.Distance(player.position, transform.position);
+    private void UpdateMarkerScale()
+    {
+        if (marker == null || player == null)
+        {
+            return;
+        }
 
-		// 距離0～10を0～1に変換
-		float normalizedDistance = Mathf.InverseLerp(100.0f, 500.0f, distance);
+        // プレイヤーとの距離
+        float distance = Vector3.Distance(
+            player.position,
+            transform.position
+        );
 
-		float scale = Mathf.Lerp(1.0f, 0.5f, normalizedDistance);
+        // 距離100～500を0～1に変換
+        float normalizedDistance = Mathf.InverseLerp(
+            100.0f,
+            500.0f,
+            distance
+        );
 
-		marker.SetScale(Vector3.one * scale);
-	}
+        // 距離に応じてマーカーの大きさを変更
+        float scale = Mathf.Lerp(
+            1.0f,
+            0.5f,
+            normalizedDistance
+        );
+
+        marker.SetScale(Vector3.one * scale);
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (!showDebugPath)
+        {
+            return;
+        }
+
+        NavMeshAgent navAgent =
+            GetComponent<NavMeshAgent>();
+
+        if (navAgent == null || !navAgent.isOnNavMesh)
+        {
+            return;
+        }
+
+        Vector3[] corners = navAgent.path.corners;
+
+        // 経路を緑色で表示
+        Gizmos.color = Color.green;
+
+        for (int i = 0; i < corners.Length - 1; i++)
+        {
+            Gizmos.DrawLine(
+                corners[i],
+                corners[i + 1]
+            );
+        }
+    }
 }

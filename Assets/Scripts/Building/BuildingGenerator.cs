@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -5,6 +6,11 @@ using UnityEngine.AI;
 
 public class BuildingGenerator : MonoBehaviour
 {
+    [Header("地面に合わせる")]
+    [SerializeField] private GroundSlope groundSlope;
+    [SerializeField] private float buildingGroundOffset = 0f;
+    [SerializeField] private float poleGroundOffset = 0f;
+
     [Header("生成数")]
     public int countX = 9;
     public int countZ = 11;
@@ -29,58 +35,72 @@ public class BuildingGenerator : MonoBehaviour
     [Range(0.5f, 1.2f)]
     public float roadScale = 0.8f;
 
-	[Header("配達先の設定")]
-	[SerializeField]
-	private GameObject deliveryAddressPrefab;
+    [Header("配達先の設定")]
+    [SerializeField]
+    private GameObject deliveryAddressPrefab;
 
-	[Header("UI Prefab")]
-	[SerializeField]
-	private WorldTargetUI markerPrefab;
+    [Header("UI Prefab")]
+    [SerializeField]
+    private WorldTargetUI markerPrefab;
 
-	[Header("Canvas")]
-	[SerializeField]
-	private RectTransform canvasRect;
+    [Header("Canvas")]
+    [SerializeField]
+    private RectTransform canvasRect;
 
-	[Header("Camera")]
-	[SerializeField]
-	private Camera targetCamera;
+    [Header("Camera")]
+    [SerializeField]
+    private Camera targetCamera;
 
-	[Header("ポール")]
-	[SerializeField]
-	private GameObject pole;
+    [Header("ポール")]
+    [SerializeField]
+    private GameObject pole;
 
-	[SerializeField]
-	private float poleOffset = 10.0f;
+    [SerializeField]
+    private float poleOffset = 10.0f;
 
-	[SerializeField]
-	[Min(0)]
-	private int deliveryAddressCount = 5;
+    [SerializeField, Min(0)]
+    private int deliveryAddressCount = 5;
 
-	private readonly List<GameObject> buildings = new();
-	private readonly List<DeliveryAddress> activeAddresses = new();
+    private readonly List<GameObject> buildings = new();
+    private readonly List<DeliveryAddress> activeAddresses = new();
 
-	private void Start() {
-		InitializeBuildings();
-	}
+    private void Start()
+    {
+        InitializeBuildings();
+    }
 
-	private void InitializeBuildings() {
-		buildings.Clear();
+    private void InitializeBuildings()
+    {
+        buildings.Clear();
 
-		foreach (Transform child in transform) {
-			if (child.name.StartsWith("Building_")) {
-				buildings.Add(child.gameObject);
-			}
-		}
+        foreach (Transform child in transform)
+        {
+            if (child.name.StartsWith("Building_"))
+            {
+                buildings.Add(child.gameObject);
+            }
+        }
 
-		Debug.Log($"建物を{buildings.Count}個取得しました");
-	}
+        Debug.Log($"建物を{buildings.Count}個取得しました");
+    }
 
-	[ContextMenu("Generate Buildings")]
+    // 地面の高さを取得
+    private float GetGroundHeight(float x, float z)
+    {
+        if (groundSlope != null)
+        {
+            return groundSlope.GetHeightAt(x, z);
+        }
+
+        return transform.position.y;
+    }
+
+    [ContextMenu("Generate Buildings")]
     public void GenerateBuildings()
     {
         ClearBuildings();
 
-		for (int x = 0; x < countX; x++)
+        for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
             {
@@ -93,8 +113,7 @@ public class BuildingGenerator : MonoBehaviour
                 // X方向
                 if (indexX != 0.0f)
                 {
-                    posX =
-                        Mathf.Sign(indexX) *
+                    posX = Mathf.Sign(indexX) *
                         (
                             spacingX * roadScale +
                             (Mathf.Abs(indexX) - 1.0f) * spacingX
@@ -104,256 +123,209 @@ public class BuildingGenerator : MonoBehaviour
                 // Z方向
                 if (indexZ != 0.0f)
                 {
-                    posZ =
-                        Mathf.Sign(indexZ) *
+                    posZ = Mathf.Sign(indexZ) *
                         (
                             spacingZ * roadScale +
                             (Mathf.Abs(indexZ) - 1.0f) * spacingZ
                         );
                 }
 
-                // 中央の十字部分にはビルを生成しない
+                // 中央の十字部分には生成しない
                 if (Mathf.Abs(posX) < roadHalfWidth ||
                     Mathf.Abs(posZ) < roadHalfWidth)
                 {
                     continue;
                 }
 
-                float width =
-                    Random.Range(widthRange.x, widthRange.y);
+                float width = Random.Range(
+                    widthRange.x, widthRange.y);
 
-                float depth =
-                    Random.Range(depthRange.x, depthRange.y);
+                float depth = Random.Range(
+                    depthRange.x, depthRange.y);
 
-                float height =
-                    Random.Range(heightRange.x, heightRange.y);
+                float height = Random.Range(
+                    heightRange.x, heightRange.y);
 
+                // ビル生成
                 GameObject building =
                     GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-				building.name = $"Building_{x}_{z}";
-
+                building.name = $"Building_{x}_{z}";
                 building.transform.SetParent(transform);
 
+                // 先にXZを設定
                 building.transform.localPosition =
-                    new Vector3(
-                        posX,
-                        height * 0.5f,
-                        posZ
-                    );
+                    new Vector3(posX, 0f, posZ);
 
-                building.transform.localScale =
-                    new Vector3(
-                        width,
-                        height,
-                        depth
-                    );
-
-                // ビルのサイズを設定
                 building.transform.localScale =
                     new Vector3(width, height, depth);
 
-                // NavMeshObstacleを追加
+                // 地面の高さを取得
+                Vector3 worldPosition =
+                    building.transform.position;
+
+                float groundY = GetGroundHeight(
+                    worldPosition.x,
+                    worldPosition.z
+                );
+
+                // ビルの底面を地面に合わせる
+                worldPosition.y =
+                    groundY +
+                    building.transform.lossyScale.y * 0.5f +
+                    buildingGroundOffset;
+
+                building.transform.position = worldPosition;
+
+                // NavMeshObstacle追加
                 NavMeshObstacle obstacle =
                     building.AddComponent<NavMeshObstacle>();
 
-                // 障害物の形をBoxにする
                 obstacle.shape = NavMeshObstacleShape.Box;
-
-                // Cubeのローカル形状に合わせる
-                // TransformのScaleが実際の大きさに反映される
                 obstacle.center = Vector3.zero;
                 obstacle.size = Vector3.one;
-
-                // NavMeshに穴を開ける
                 obstacle.carving = true;
+                obstacle.carveOnlyStationary = true;
 
-				// 静止しているときにCarveする
-				obstacle.carveOnlyStationary = true;
-
-                // リストに追加
+                // ビルを管理
                 buildings.Add(building);
+                building.layer = 7;
 
-				// レイヤーの設定
-				building.layer = 7;
-
-				// 建物1個につきPoleを1個生成
-				SpawnPole(building, width, depth);
-			}
+                // ポール生成
+                SpawnPole(building, width, depth);
+            }
         }
-	}
+    }
 
     [ContextMenu("Clear Buildings")]
     public void ClearBuildings()
     {
-		// 生成済みの建物を削除
-		for (int i = transform.childCount - 1; i >= 0; i--) {
-			DestroyImmediate(transform.GetChild(i).gameObject);
-		}
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            GameObject child = transform.GetChild(i).gameObject;
 
-		// 生成済みのUIを削除
-		if (canvasRect != null) {
-			WorldTargetUI[] markers =
-				canvasRect.GetComponentsInChildren<WorldTargetUI>(true);
+            if (Application.isPlaying)
+            {
+                Destroy(child);
+            }
+            else
+            {
+                DestroyImmediate(child);
+            }
+        }
 
-			foreach (WorldTargetUI marker in markers) {
-				if (marker != null) {
-					DestroyImmediate(marker.gameObject);
-				}
-			}
-		}
+        if (canvasRect != null)
+        {
+            WorldTargetUI[] markers =
+                canvasRect.GetComponentsInChildren<WorldTargetUI>(true);
 
-		// 管理リストをクリア
-		buildings.Clear();
-		activeAddresses.Clear();
-	}
+            foreach (WorldTargetUI marker in markers)
+            {
+                if (marker == null)
+                    continue;
 
-	//// 配達先を1個生成
-	//public void SpawnDeliveryAddress() {
-	//	if (deliveryAddressPrefab == null || buildings.Count == 0)
-	//		return;
+                if (Application.isPlaying)
+                {
+                    Destroy(marker.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(marker.gameObject);
+                }
+            }
+        }
 
-	//	// 現在配達先が配置されていないビルを取得
-	//	List<GameObject> candidates = new();
+        buildings.Clear();
+        activeAddresses.Clear();
+    }
 
-	//	foreach (GameObject building in buildings) {
-	//		if (building == null)
-	//			continue;
+    // 配達完了時
+    public void CompleteDelivery(DeliveryAddress address)
+    {
+        if (address == null)
+            return;
 
-	//		bool hasAddress = false;
+        if (!activeAddresses.Remove(address))
+            return;
 
-	//		foreach (DeliveryAddress address in activeAddresses) {
-	//			if (address != null &&
-	//				address.transform.parent == building.transform) {
-	//				hasAddress = true;
-	//				break;
-	//			}
-	//		}
+        Destroy(address.gameObject);
 
-	//		if (!hasAddress)
-	//			candidates.Add(building);
-	//	}
+        // 必要に応じて新しい配達先を生成
+        // SpawnDeliveryAddress();
+    }
 
-	//	if (candidates.Count == 0)
-	//		return;
+    // 建物1個につきポールを1個生成
+    private void SpawnPole(
+        GameObject building,
+        float width,
+        float depth)
+    {
+        if (pole == null)
+            return;
 
-	//	// ランダムにビルを選択
-	//	int index = Random.Range(0, candidates.Count);
-	//	GameObject targetBuilding = candidates[index];
+        float halfWidth = width * 0.5f;
+        float halfDepth = depth * 0.5f;
 
-	//	// 配達先を生成
-	//	GameObject deliveryAddress = Instantiate(
-	//		deliveryAddressPrefab,
-	//		targetBuilding.transform
-	//	);
+        Vector3 localPosition = Vector3.zero;
+        Quaternion rotation = Quaternion.identity;
 
-	//	deliveryAddress.transform.localPosition =
-	//		new Vector3(0f, 0.5f, 0f);
+        // 4つの壁からランダムに選択
+        int side = Random.Range(0, 4);
 
-	//	deliveryAddress.transform.localRotation =
-	//		Quaternion.identity;
+        switch (side)
+        {
+            case 0: // 前面
+                localPosition = new Vector3(
+                    Random.Range(-halfWidth, halfWidth),
+                    0.0f,
+                    halfDepth + poleOffset
+                );
+                break;
 
-	//	// Prefabに付いているDeliveryAddressを取得
-	//	DeliveryAddress addressComponent =
-	//		deliveryAddress.GetComponent<DeliveryAddress>();
+            case 1: // 背面
+                localPosition = new Vector3(
+                    Random.Range(-halfWidth, halfWidth),
+                    0.0f,
+                    -halfDepth - poleOffset
+                );
+                break;
 
-	//	if (addressComponent != null) {
-	//		addressComponent.Initialize(this);
-	//		activeAddresses.Add(addressComponent);
-	//	}
+            case 2: // 右側
+                localPosition = new Vector3(
+                    halfWidth + poleOffset,
+                    0.0f,
+                    Random.Range(-halfDepth, halfDepth)
+                );
+                break;
 
-	//	// UIをCanvasの子として生成
-	//	if (markerPrefab != null &&
-	//		canvasRect != null &&
-	//		targetCamera != null) {
+            case 3: // 左側
+                localPosition = new Vector3(
+                    -halfWidth - poleOffset,
+                    0.0f,
+                    Random.Range(-halfDepth, halfDepth)
+                );
+                break;
+        }
 
-	//		WorldTargetUI marker = Instantiate(
-	//			markerPrefab,
-	//			canvasRect
-	//		);
+        Vector3 buildingPosition = building.transform.position;
 
-	//		// 配達先を追従対象に設定
-	//		marker.Initialize(
-	//			deliveryAddress.transform,
-	//			targetCamera,
-	//			canvasRect
-	//		);
-	//	}
-	//}
+        Vector3 position = new Vector3(
+            buildingPosition.x + localPosition.x,
+            0.0f,
+            buildingPosition.z + localPosition.z
+        );
 
-	// 配達完了時に呼び出す
-	public void CompleteDelivery(DeliveryAddress address) {
-		if (address == null)
-			return;
+        // ポールの位置で地面の高さを取得
+        position.y = GetGroundHeight(
+            position.x,
+            position.z
+        ) + poleGroundOffset;
 
-		// 管理リストから削除
-		if (!activeAddresses.Remove(address))
-			return;
-
-		// 配達先を削除
-		Destroy(address.gameObject);
-
-		// 新しい配達先を1個追加
-		//SpawnDeliveryAddress();
-	}
-
-	// 建物1個につきPoleを1個生成する
-	private void SpawnPole(GameObject building, float width, float depth) {
-		if (pole == null)
-			return;
-
-		float halfWidth = width * 0.5f;
-		float halfDepth = depth * 0.5f;
-
-		Vector3 localPosition = Vector3.zero;
-		Quaternion rotation = Quaternion.identity;
-
-		// 4つの壁からランダムに1つ選択
-		int side = Random.Range(0, 4);
-
-		switch (side) {
-			case 0: // 前面
-				localPosition = new Vector3(
-					Random.Range(-halfWidth, halfWidth),
-					0.0f,
-					halfDepth + poleOffset
-				);
-				break;
-
-			case 1: // 背面
-				localPosition = new Vector3(
-					Random.Range(-halfWidth, halfWidth),
-					0.0f,
-					-halfDepth - poleOffset
-				);
-				break;
-
-			case 2: // 右側
-				localPosition = new Vector3(
-					halfWidth + poleOffset,
-					0.0f,
-					Random.Range(-halfDepth, halfDepth)
-				);
-				break;
-
-			case 3: // 左側
-				localPosition = new Vector3(
-					-halfWidth - poleOffset,
-					0.0f,
-					Random.Range(-halfDepth, halfDepth)
-				);
-				break;
-		}
-
-		// 建物の底面中心を基準に配置
-		Vector3 position = new Vector3(
-			building.transform.position.x + localPosition.x,
-			building.transform.position.y
-				- building.transform.localScale.y * 0.5f,
-			building.transform.position.z + localPosition.z
-		);
-
-		// Pole生成
-		GameObject obj = Instantiate(pole, position, rotation, transform);
-	}
+        Instantiate(
+            pole,
+            position,
+            rotation,
+            transform
+        );
+    }
 }

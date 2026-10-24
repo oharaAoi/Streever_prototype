@@ -3,36 +3,52 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// BuildingGenerator と同じ計算で「ビルの間の道路中心線」を復元します。
-/// BuildingGenerator 自体の変更は不要です。回転・スケールは 0 / 1 前提です。
+/// BuildingGeneratorと同じ計算で
+/// ビルの間の道路中心線を復元する。
+/// 回転・スケールは0 / 1前提。
 /// </summary>
 public class TrafficManager : MonoBehaviour
 {
     [Header("参照")]
-    [SerializeField] private BuildingGenerator buildingGenerator;
-    [SerializeField] private GameObject carPrefab;
+    [SerializeField]
+    private BuildingGenerator buildingGenerator;
+
+    [SerializeField]
+    private GameObject carPrefab;
+
+    [Header("地面の高さ")]
+    [SerializeField]
+    private GroundSlope groundSlope;
 
     [Header("生成")]
-    [Min(0)] public int carCount = 20;
-    [SerializeField] private bool generateOnStart = true;
+    [Min(0)]
+    public int carCount = 20;
+
+    [SerializeField]
+    private bool generateOnStart = true;
 
     [Tooltip("道路面から車PrefabのPivotまでの高さ")]
     public float carY = 0.5f;
 
-    [Min(2f)] public float minimumSpawnDistance = 12f;
+    [Min(2f)]
+    public float minimumSpawnDistance = 12f;
 
     [Header("走行")]
-    [Tooltip("道路中心から車線中心までの距離。日本式の左側通行です")]
-    [Min(0f)] public float laneOffset = 3f;
+    [Tooltip("道路中心から車線中心までの距離")]
+    [Min(0f)]
+    public float laneOffset = 3f;
 
-    [Min(1f)] public float turnRadius = 8f;
+    [Min(1f)]
+    public float turnRadius = 8f;
 
-    public Vector2 speedRange = new Vector2(10f, 16f);
+    public Vector2 speedRange =
+        new Vector2(10f, 16f);
 
     [Range(0f, 1f)]
     public float turnProbability = 0.35f;
 
-    [Min(0f)] public float followingDistance = 7f;
+    [Min(0f)]
+    public float followingDistance = 7f;
 
     [Header("表示")]
     public bool drawRoadGizmos = true;
@@ -45,7 +61,9 @@ public class TrafficManager : MonoBehaviour
     private void Start()
     {
         if (generateOnStart)
+        {
             GenerateTraffic();
+        }
     }
 
     [ContextMenu("Generate Traffic")]
@@ -53,10 +71,11 @@ public class TrafficManager : MonoBehaviour
     {
         ClearTraffic();
 
-        if (buildingGenerator == null || carPrefab == null)
+        if (buildingGenerator == null ||
+            carPrefab == null)
         {
             Debug.LogWarning(
-                "TrafficManager: BuildingGenerator と Car Prefab を設定してください。",
+                "TrafficManager: BuildingGeneratorとCar Prefabを設定してください。",
                 this
             );
             return;
@@ -74,12 +93,23 @@ public class TrafficManager : MonoBehaviour
         }
 
         // 重複を避けながら道路に車を並べる
-        int attempts = Mathf.Max(20, carCount * 30);
+        int attempts = Mathf.Max(
+            20,
+            carCount * 30
+        );
 
-        while (cars.Count < carCount && attempts-- > 0)
+        while (cars.Count < carCount &&
+               attempts-- > 0)
         {
-            int ix = Random.Range(0, roadX.Length);
-            int iz = Random.Range(0, roadZ.Length);
+            int ix = Random.Range(
+                0,
+                roadX.Length
+            );
+
+            int iz = Random.Range(
+                0,
+                roadZ.Length
+            );
 
             Vector2Int dir = RandomDirection();
 
@@ -89,15 +119,30 @@ public class TrafficManager : MonoBehaviour
             );
 
             if (!IsInside(next))
+            {
                 continue;
+            }
 
-            Vector3 a = Junction(new Vector2Int(ix, iz));
+            Vector3 a = Junction(
+                new Vector2Int(ix, iz)
+            );
+
             Vector3 b = Junction(next);
 
-            float fraction = Random.Range(0.2f, 0.75f);
+            float fraction = Random.Range(
+                0.2f,
+                0.75f
+            );
 
             Vector3 pos =
-                Vector3.Lerp(a, b, fraction) + Lane(dir);
+                Vector3.Lerp(a, b, fraction) +
+                Lane(dir);
+
+            // 車線の正確なXZ座標で地面の高さを取得
+            pos.y = GetRoadHeight(
+                pos.x,
+                pos.z
+            );
 
             bool crowded = false;
 
@@ -115,29 +160,43 @@ public class TrafficManager : MonoBehaviour
             }
 
             if (crowded)
+            {
                 continue;
+            }
 
             GameObject obj = Instantiate(
                 carPrefab,
                 pos,
-                Quaternion.LookRotation(ToVector3(dir)),
+                Quaternion.LookRotation(
+                    ToVector3(dir)
+                ),
                 transform
             );
 
-            obj.name = $"TrafficCar_{cars.Count:00}";
+            obj.name =
+                $"TrafficCar_{cars.Count:00}";
 
-            TrafficCar car = obj.GetComponent<TrafficCar>();
+            TrafficCar car =
+                obj.GetComponent<TrafficCar>();
 
             if (car == null)
+            {
                 car = obj.AddComponent<TrafficCar>();
+            }
 
             car.Initialize(
                 this,
                 new Vector2Int(ix, iz),
                 dir,
                 Random.Range(
-                    Mathf.Min(speedRange.x, speedRange.y),
-                    Mathf.Max(speedRange.x, speedRange.y)
+                    Mathf.Min(
+                        speedRange.x,
+                        speedRange.y
+                    ),
+                    Mathf.Max(
+                        speedRange.x,
+                        speedRange.y
+                    )
                 ),
                 fraction
             );
@@ -151,18 +210,26 @@ public class TrafficManager : MonoBehaviour
     {
         cars.Clear();
 
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        for (int i = transform.childCount - 1;
+             i >= 0;
+             i--)
         {
             GameObject child =
                 transform.GetChild(i).gameObject;
 
             if (child.GetComponent<TrafficCar>() == null)
+            {
                 continue;
+            }
 
             if (Application.isPlaying)
+            {
                 Destroy(child);
+            }
             else
+            {
                 DestroyImmediate(child);
+            }
         }
     }
 
@@ -190,10 +257,13 @@ public class TrafficManager : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            float index = i - (count - 1) * 0.5f;
+            float index =
+                i - (count - 1) * 0.5f;
 
             if (Mathf.Approximately(index, 0f))
+            {
                 continue;
+            }
 
             float coord =
                 Mathf.Sign(index) *
@@ -209,40 +279,78 @@ public class TrafficManager : MonoBehaviour
 
         List<float> roads = new();
 
-        for (int i = 0; i < centers.Count - 1; i++)
+        for (int i = 0;
+             i < centers.Count - 1;
+             i++)
         {
             float mid =
-                (centers[i] + centers[i + 1]) * 0.5f;
+                (centers[i] + centers[i + 1]) *
+                0.5f;
 
-            // 中央は座標0を通る十字路として扱う
-            if (centers[i] < 0f && centers[i + 1] > 0f)
+            // 中央は座標0を通る十字路
+            if (centers[i] < 0f &&
+                centers[i + 1] > 0f)
+            {
                 mid = 0f;
+            }
 
             roads.Add(mid);
         }
 
-        if (!roads.Exists(v => Mathf.Abs(v) < 0.001f))
+        if (!roads.Exists(
+            v => Mathf.Abs(v) < 0.001f))
+        {
             roads.Add(0f);
+        }
 
         roads.Sort();
 
         return roads.ToArray();
     }
 
-    public Vector3 Junction(Vector2Int index)
+    // 車PrefabのPivotまで含めたY座標を返す
+    public float GetRoadHeight(
+        float worldX,
+        float worldZ)
     {
-        return buildingGenerator.transform.position +
-            new Vector3(
-                roadX[index.x],
-                carY,
-                roadZ[index.y]
-            );
+        if (groundSlope != null)
+        {
+            return groundSlope.GetHeightAt(
+                worldX,
+                worldZ
+            ) + carY;
+        }
+
+        // GroundSlopeが未設定の場合
+        // 従来の固定高さを使用
+        return buildingGenerator != null
+            ? buildingGenerator.transform.position.y + carY
+            : carY;
     }
 
+    // 交差点の座標を取得
+    public Vector3 Junction(Vector2Int index)
+    {
+        Vector3 position =
+            buildingGenerator.transform.position +
+            new Vector3(
+                roadX[index.x],
+                0f,
+                roadZ[index.y]
+            );
+
+        position.y = GetRoadHeight(
+            position.x,
+            position.z
+        );
+
+        return position;
+    }
+
+    // 車線のオフセット
     public Vector3 Lane(Vector2Int dir)
     {
         // 左側通行
-        // +Z で -X 側、+X で +Z 側にオフセット
         return new Vector3(
             -dir.y,
             0f,
@@ -260,6 +368,7 @@ public class TrafficManager : MonoBehaviour
                p.y < roadZ.Length;
     }
 
+    // 次の進行方向を決定
     public Vector2Int NextDirection(
         Vector2Int at,
         Vector2Int current)
@@ -277,17 +386,25 @@ public class TrafficManager : MonoBehaviour
         List<Vector2Int> choices = new();
 
         if (IsInside(at + current))
+        {
             choices.Add(current);
+        }
 
         if (IsInside(at + left))
+        {
             choices.Add(left);
+        }
 
         if (IsInside(at + right))
+        {
             choices.Add(right);
+        }
 
-        // 端でのみ折り返す
+        // 端では折り返す
         if (choices.Count == 0)
+        {
             return -current;
+        }
 
         if (choices.Contains(current) &&
             Random.value > turnProbability)
@@ -296,7 +413,10 @@ public class TrafficManager : MonoBehaviour
         }
 
         return choices[
-            Random.Range(0, choices.Count)
+            Random.Range(
+                0,
+                choices.Count
+            )
         ];
     }
 
@@ -329,8 +449,11 @@ public class TrafficManager : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (!drawRoadGizmos || buildingGenerator == null)
+        if (!drawRoadGizmos ||
+            buildingGenerator == null)
+        {
             return;
+        }
 
         float[] xs = CalculateRoads(
             buildingGenerator.countX,
@@ -344,8 +467,11 @@ public class TrafficManager : MonoBehaviour
             buildingGenerator.roadScale
         );
 
-        if (xs.Length == 0 || zs.Length == 0)
+        if (xs.Length == 0 ||
+            zs.Length == 0)
+        {
             return;
+        }
 
         Vector3 origin =
             buildingGenerator.transform.position +
@@ -356,10 +482,14 @@ public class TrafficManager : MonoBehaviour
         foreach (float x in xs)
         {
             Gizmos.DrawLine(
-                origin + new Vector3(x, 0, zs[0]),
                 origin + new Vector3(
                     x,
-                    0,
+                    0f,
+                    zs[0]
+                ),
+                origin + new Vector3(
+                    x,
+                    0f,
                     zs[zs.Length - 1]
                 )
             );
@@ -368,10 +498,14 @@ public class TrafficManager : MonoBehaviour
         foreach (float z in zs)
         {
             Gizmos.DrawLine(
-                origin + new Vector3(xs[0], 0, z),
+                origin + new Vector3(
+                    xs[0],
+                    0f,
+                    z
+                ),
                 origin + new Vector3(
                     xs[xs.Length - 1],
-                    0,
+                    0f,
                     z
                 )
             );
