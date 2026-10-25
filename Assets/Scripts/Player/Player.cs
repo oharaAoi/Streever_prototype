@@ -112,6 +112,12 @@ public class Player : MonoBehaviour {
 	[SerializeField, Header("1回のジャンプで何人増えたらバリアをはるか")]
 	private int shieledUpNumberOfPeople = 2000;
 
+	[SerializeField]
+	private UIDocument groundUI;
+
+	[SerializeField]
+	private UIDocument airUI;
+
 	// 姿勢を補正するか
 	public bool isCorrectingRotation = false;
 
@@ -229,6 +235,17 @@ public class Player : MonoBehaviour {
 		// UIに情報を渡す
 		boostUI.SetValue(rb.linearVelocity.magnitude);
 		boostUI.SetHighValue(maxMoveSpeed);
+
+		if (groundUI != null && airUI != null) {
+			if (isGrounded) {
+
+				groundUI.enabled = true;
+				airUI.enabled = false;
+			} else {
+				groundUI.enabled = false;
+				airUI.enabled = true;
+			}
+		}
 	}
 
 	// 遅れて更新
@@ -243,7 +260,7 @@ public class Player : MonoBehaviour {
 
 		if (isStan) {
 			stanTimer += Time.deltaTime;
-			if(stanTimer >= stanTime) {
+			if (stanTimer >= stanTime) {
 				isStan = false;
 				stanTimer = 0;
 			}
@@ -458,7 +475,7 @@ public class Player : MonoBehaviour {
 			}
 		}
 
-		
+
 	}
 
 	// 移動方向を取得する

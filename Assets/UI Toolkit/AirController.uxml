@@ -1,0 +1,5 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Label text="A,D連打 : 横トリック" style="font-size: 48px; color: rgb(255, 255, 255); -unity-text-outline-width: 1.5px; width: 454px; translate: 1428px 788px;"/>
+    <ui:Label text="Space : 縦トリック" style="font-size: 48px; -unity-text-outline-width: 1.5px; color: rgb(255, 255, 255); translate: 1423px 788px;"/>
+    <ui:Label text="S : 急降下 " style="font-size: 48px; color: rgb(255, 255, 255); -unity-text-outline-width: 1.5px; translate: 1424px 788px;"/>
+</ui:UXML>

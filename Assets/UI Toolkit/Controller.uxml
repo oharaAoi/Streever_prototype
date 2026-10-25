@@ -1,0 +1,4 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Label text="A,D : 視点移動" name="Label" style="height: 59px; font-size: 48px; width: 246px; translate: 1561px 780px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(0, 0, 0); color: rgb(255, 255, 255);"/>
+    <ui:Label text="Space : 前進" style="font-size: 48px; color: rgb(255, 255, 255); -unity-text-outline-width: 1px; width: 343px; translate: 1552px 804px; -unity-text-outline-color: rgb(0, 0, 0);"/>
+</ui:UXML>

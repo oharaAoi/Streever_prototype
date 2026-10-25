@@ -2114,9 +2114,17 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
+      propertyPath: airUI
+      value: 
+      objectReference: {fileID: 1541410932}
+    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: boostUI
       value: 
       objectReference: {fileID: 216468811}
+    - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
+      propertyPath: groundUI
+      value: 
+      objectReference: {fileID: 900976172}
     - target: {fileID: 5063773488729185545, guid: 64e9be6c61c1a134198346b6225aa47a, type: 3}
       propertyPath: boostCoolTimeBarUI
       value: 
@@ -3612,7 +3620,9 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 900976171}
+  - {fileID: 1541410931}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &216468814
@@ -5870,6 +5880,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TrafficManager
   buildingGenerator: {fileID: 1106358620}
   carPrefab: {fileID: 5193591252313617992, guid: cb6864c020fbf604ba483294590513e3, type: 3}
+  groundSlope: {fileID: 0}
   carCount: 20
   generateOnStart: 1
   carY: 2
@@ -13433,6 +13444,61 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 180296a1597b52c4086fcd9d968bfe80, type: 3}
+--- !u!1 &900976170
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 900976171}
+  - component: {fileID: 900976172}
+  m_Layer: 5
+  m_Name: GroundOperations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &900976171
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900976170}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 216468813}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &900976172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900976170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: e20e8e3eb37ad9441982a6fd7130efbf, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: f4fdcc5c48b5ea347ad9f05951ad1252, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!1 &901286024
 GameObject:
   m_ObjectHideFlags: 0
@@ -18379,6 +18445,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ba7c44e2b8d96a4ab6c169b74614617, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingGenerator
+  groundSlope: {fileID: 0}
+  buildingGroundOffset: 0
+  poleGroundOffset: 0
   countX: 10
   countZ: 10
   spacingX: 95
@@ -25849,6 +25918,61 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1537911611}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1541410930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1541410931}
+  - component: {fileID: 1541410932}
+  m_Layer: 5
+  m_Name: AirOperations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1541410931
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541410930}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 216468813}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1541410932
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541410930}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: e20e8e3eb37ad9441982a6fd7130efbf, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: cf9c8b4816afdac43b5e30c10b236589, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
 --- !u!1 &1545467800
 GameObject:
   m_ObjectHideFlags: 0
@@ -32665,6 +32789,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::NewMonoBehaviourScript
   jumpingPlatformPrefab: {fileID: 5544099815482881562, guid: d0d7b653f16eb0a4a8cc5c3a1a5d7cc4, type: 3}
   buildingsRoot: {fileID: 1106358619}
+  groundSlope: {fileID: 0}
+  groundOffset: 0
   pairCount: 25
   yPosition: 0.99
   pairDistance: 19
