@@ -192,7 +192,7 @@ public class BuildingGenerator : MonoBehaviour
                 building.layer = 7;
 
                 // ポール生成
-                SpawnPole(building, width, depth);
+                //SpawnPole(building, width, depth);
             }
         }
     }
