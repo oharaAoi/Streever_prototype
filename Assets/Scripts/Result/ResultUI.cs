@@ -67,7 +67,7 @@ public class ResultUI : MonoBehaviour
         Debug.Log("CityMapSceneへ移動します");
 
         SceneManager.LoadScene(
-            "CityMapScene",
+			"testSnaiper",
             LoadSceneMode.Single
         );
     }
