@@ -626,7 +626,7 @@ public class Player : MonoBehaviour {
 
 	// トリックアクションをおこなった時に加速させる
 	public void FinishTrick() {
-		currentSpeed += trickAcceleration;
+		//currentSpeed += trickAcceleration;
 		isTrickPlaying = false;
 		isFinishTrick = true;
 	}
