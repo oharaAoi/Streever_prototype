@@ -19,6 +19,16 @@ public class JumpingPlatformGenerator : MonoBehaviour
     [SerializeField]
     private float groundOffset = 0f;
 
+    [Header("坂道への設置調整")]
+    [SerializeField]
+    private float rampGroundOffset = 0.05f;
+
+    [SerializeField]
+    private bool avoidSteepGround = true;
+
+    [SerializeField, Min(0f)]
+    private float maxGroundHeightDifference = 1f;
+
     [Header("生成するジャンプ台ペア数")]
     [SerializeField]
     private int pairCount = 12;
@@ -87,7 +97,10 @@ public class JumpingPlatformGenerator : MonoBehaviour
         RightLower
     }
 
-    // Groundの高さを取得
+    // ================================================
+    // 地面の高さを取得
+    // ================================================
+
     private float GetGroundY(Vector3 position)
     {
         if (groundSlope != null)
@@ -101,15 +114,89 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return yPosition;
     }
 
+    // ================================================
+    // ジャンプ台の設置範囲の高低差を調べる
+    // ================================================
+
+    private bool IsGroundSuitable(
+        Vector3 position,
+        float yRotation)
+    {
+        if (groundSlope == null)
+            return true;
+
+        Quaternion rotation =
+            Quaternion.Euler(0f, yRotation, 0f);
+
+        Vector3 forward =
+            rotation * Vector3.forward;
+
+        Vector3 right =
+            rotation * Vector3.right;
+
+        float halfLength =
+            platformCheckSize.z * 0.5f;
+
+        float halfWidth =
+            platformCheckSize.x * 0.5f;
+
+        float minHeight = float.MaxValue;
+        float maxHeight = float.MinValue;
+
+        Vector3[] samplePositions =
+        {
+            position,
+
+            position + forward * halfLength,
+            position - forward * halfLength,
+
+            position + right * halfWidth,
+            position - right * halfWidth,
+
+            position + forward * halfLength
+                     + right * halfWidth,
+
+            position + forward * halfLength
+                     - right * halfWidth,
+
+            position - forward * halfLength
+                     + right * halfWidth,
+
+            position - forward * halfLength
+                     - right * halfWidth
+        };
+
+        foreach (Vector3 sample in samplePositions)
+        {
+            float height = GetGroundY(sample);
+
+            minHeight = Mathf.Min(
+                minHeight,
+                height
+            );
+
+            maxHeight = Mathf.Max(
+                maxHeight,
+                height
+            );
+        }
+
+        return maxHeight - minHeight <=
+            maxGroundHeightDifference;
+    }
+
+    // ================================================
+    // ジャンプ台生成
+    // ================================================
+
     [ContextMenu("Generate Jumping Platforms")]
     public void GenerateJumpingPlatforms()
     {
-        ClearJumpingPlatforms();
-
         if (jumpingPlatformPrefab == null)
         {
             Debug.LogWarning(
-                "JumpingPlatform Prefabが設定されていません。"
+                "JumpingPlatform Prefabが設定されていません。",
+                this
             );
             return;
         }
@@ -117,15 +204,8 @@ public class JumpingPlatformGenerator : MonoBehaviour
         if (buildingsRoot == null)
         {
             Debug.LogWarning(
-                "Buildings Rootが設定されていません。"
-            );
-            return;
-        }
-
-        if (buildingsRoot.childCount == 0)
-        {
-            Debug.LogWarning(
-                "先にGenerate Buildingsを実行してください。"
+                "Buildings Rootが設定されていません。",
+                this
             );
             return;
         }
@@ -136,26 +216,28 @@ public class JumpingPlatformGenerator : MonoBehaviour
             horizontalRoadZPositions.Count == 0)
         {
             Debug.LogWarning(
-                "ビル間道路を計算できませんでした。"
+                "先にGenerate Buildingsを実行してください。",
+                this
             );
             return;
         }
 
+        ClearJumpingPlatforms();
+
         float minX = buildingXPositions[0];
+
         float maxX = buildingXPositions[
             buildingXPositions.Count - 1
         ];
 
         float minZ = buildingZPositions[0];
+
         float maxZ = buildingZPositions[
             buildingZPositions.Count - 1
         ];
 
-        // 5エリアに分配
         int baseCount = pairCount / 5;
         int remainder = pairCount % 5;
-
-        int generated = 0;
 
         Area[] areas =
         {
@@ -165,6 +247,8 @@ public class JumpingPlatformGenerator : MonoBehaviour
             Area.RightUpper,
             Area.RightLower
         };
+
+        int generated = 0;
 
         for (int i = 0; i < areas.Length; i++)
         {
@@ -183,11 +267,15 @@ public class JumpingPlatformGenerator : MonoBehaviour
         }
 
         Debug.Log(
-            $"ジャンプ台ペアを{generated}組生成しました。"
+            $"ジャンプ台ペアを{generated}組生成しました。",
+            this
         );
     }
 
-    // ビル位置と道路位置を取得
+    // ================================================
+    // ビル群から道路を取得
+    // ================================================
+
     private void CollectBuildingGrid()
     {
         buildingXPositions.Clear();
@@ -215,7 +303,6 @@ public class JumpingPlatformGenerator : MonoBehaviour
         verticalRoadXPositions.Clear();
         horizontalRoadZPositions.Clear();
 
-        // X方向の道路
         for (int i = 0;
              i < buildingXPositions.Count - 1;
              i++)
@@ -227,7 +314,6 @@ public class JumpingPlatformGenerator : MonoBehaviour
             verticalRoadXPositions.Add(middle);
         }
 
-        // Z方向の道路
         for (int i = 0;
              i < buildingZPositions.Count - 1;
              i++)
@@ -255,7 +341,10 @@ public class JumpingPlatformGenerator : MonoBehaviour
         values.Add(value);
     }
 
-    // 各エリアにジャンプ台を生成
+    // ================================================
+    // 指定エリアにジャンプ台を生成
+    // ================================================
+
     private int GenerateForArea(
         Area area,
         int targetCount,
@@ -273,23 +362,34 @@ public class JumpingPlatformGenerator : MonoBehaviour
         {
             attempts++;
 
-            bool verticalRoad = Random.value > 0.5f;
+            bool verticalRoad =
+                Random.value > 0.5f;
 
             Vector3 center;
 
             if (area == Area.CenterCross)
             {
                 center = verticalRoad
-                    ? GetCenterVerticalRoadPosition(minZ, maxZ)
-                    : GetCenterHorizontalRoadPosition(minX, maxX);
+                    ? GetCenterVerticalRoadPosition(
+                        minZ,
+                        maxZ
+                    )
+                    : GetCenterHorizontalRoadPosition(
+                        minX,
+                        maxX
+                    );
             }
             else
             {
                 center = verticalRoad
                     ? GetVerticalRoadPosition(
-                        area, minX, maxX, minZ, maxZ)
+                        minZ,
+                        maxZ
+                    )
                     : GetHorizontalRoadPosition(
-                        area, minX, maxX, minZ, maxZ);
+                        minX,
+                        maxX
+                    );
             }
 
             if (!IsValidArea(center, area))
@@ -345,9 +445,23 @@ public class JumpingPlatformGenerator : MonoBehaviour
                 rotationB = 90f;
             }
 
-            // それぞれの地面の高さを取得
+            // 地面の高さを取得
             positionA.y = GetGroundY(positionA);
             positionB.y = GetGroundY(positionB);
+
+            // 坂道の途中を避ける
+            if (avoidSteepGround)
+            {
+                if (!IsGroundSuitable(
+                        positionA,
+                        rotationA) ||
+                    !IsGroundSuitable(
+                        positionB,
+                        rotationB))
+                {
+                    continue;
+                }
+            }
 
             // ビルとの重なり
             if (IsOverlappingBuilding(positionA) ||
@@ -356,7 +470,7 @@ public class JumpingPlatformGenerator : MonoBehaviour
                 continue;
             }
 
-            // 進行方向にビルがないか確認
+            // ジャンプ後の道路が空いているか
             if (!HasClearRoad(positionA, rotationA) ||
                 !HasClearRoad(positionB, rotationB))
             {
@@ -383,16 +497,19 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return generated;
     }
 
-    // 縦道路の候補を取得
+    // ================================================
+    // 縦道路候補
+    // ================================================
+
     private Vector3 GetVerticalRoadPosition(
-        Area area,
-        float minX,
-        float maxX,
         float minZ,
         float maxZ)
     {
         float x = verticalRoadXPositions[
-            Random.Range(0, verticalRoadXPositions.Count)
+            Random.Range(
+                0,
+                verticalRoadXPositions.Count
+            )
         ];
 
         float z = Random.Range(
@@ -403,13 +520,13 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return new Vector3(x, yPosition, z);
     }
 
-    // 横道路の候補を取得
+    // ================================================
+    // 横道路候補
+    // ================================================
+
     private Vector3 GetHorizontalRoadPosition(
-        Area area,
         float minX,
-        float maxX,
-        float minZ,
-        float maxZ)
+        float maxX)
     {
         float x = Random.Range(
             minX + edgeClearance,
@@ -417,21 +534,31 @@ public class JumpingPlatformGenerator : MonoBehaviour
         );
 
         float z = horizontalRoadZPositions[
-            Random.Range(0, horizontalRoadZPositions.Count)
+            Random.Range(
+                0,
+                horizontalRoadZPositions.Count
+            )
         ];
 
         return new Vector3(x, yPosition, z);
     }
 
+    // ================================================
     // 生成エリアの判定
-    private bool IsValidArea(Vector3 position, Area area)
+    // ================================================
+
+    private bool IsValidArea(
+        Vector3 position,
+        Area area)
     {
         switch (area)
         {
             case Area.CenterCross:
                 return
-                    Mathf.Abs(position.x) < centerClearance ||
-                    Mathf.Abs(position.z) < centerClearance;
+                    Mathf.Abs(position.x) <
+                        centerClearance ||
+                    Mathf.Abs(position.z) <
+                        centerClearance;
 
             case Area.LeftUpper:
                 return
@@ -457,10 +584,15 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return false;
     }
 
-    // ビル街内部の交差点判定
-    private bool IsNearRoadIntersection(Vector3 position)
+    // ================================================
+    // 道路交差点との距離
+    // ================================================
+
+    private bool IsNearRoadIntersection(
+        Vector3 position)
     {
-        foreach (float roadX in verticalRoadXPositions)
+        foreach (float roadX
+                 in verticalRoadXPositions)
         {
             if (Mathf.Abs(position.x - roadX) >
                 intersectionClearance)
@@ -468,7 +600,8 @@ public class JumpingPlatformGenerator : MonoBehaviour
                 continue;
             }
 
-            foreach (float roadZ in horizontalRoadZPositions)
+            foreach (float roadZ
+                     in horizontalRoadZPositions)
             {
                 if (Mathf.Abs(position.z - roadZ) <
                     intersectionClearance)
@@ -481,7 +614,10 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return false;
     }
 
-    // 中央の交差点判定
+    // ================================================
+    // 中央交差点を避ける
+    // ================================================
+
     private bool IsInsideCenterIntersection(
         Vector3 position)
     {
@@ -492,18 +628,24 @@ public class JumpingPlatformGenerator : MonoBehaviour
                 centerIntersectionClearance;
     }
 
+    // ================================================
     // ビルとの重なり判定
-    private bool IsOverlappingBuilding(Vector3 position)
+    // ================================================
+
+    private bool IsOverlappingBuilding(
+        Vector3 position)
     {
         Vector3 center = position +
-            Vector3.up * platformCheckSize.y * 0.5f;
+            Vector3.up *
+            platformCheckSize.y * 0.5f;
 
         Bounds platformBounds = new Bounds(
             center,
             platformCheckSize
         );
 
-        foreach (Transform building in buildingsRoot)
+        foreach (Transform building
+                 in buildingsRoot)
         {
             Collider collider =
                 building.GetComponent<Collider>();
@@ -511,31 +653,41 @@ public class JumpingPlatformGenerator : MonoBehaviour
             if (collider == null)
                 continue;
 
-            if (platformBounds.Intersects(collider.bounds))
+            if (platformBounds.Intersects(
+                collider.bounds))
+            {
                 return true;
+            }
         }
 
         return false;
     }
 
-    // ジャンプ後の進行方向を確認
+    // ================================================
+    // 進行方向にビルがないか確認
+    // ================================================
+
     private bool HasClearRoad(
         Vector3 position,
         float yRotation)
     {
-        Quaternion rotation = Quaternion.Euler(
-            0f,
-            yRotation,
-            0f
-        );
+        Quaternion rotation =
+            Quaternion.Euler(
+                0f,
+                yRotation,
+                0f
+            );
 
-        Vector3 forward = rotation * Vector3.forward;
+        Vector3 forward =
+            rotation * Vector3.forward;
 
-        Vector3 checkCenter = position +
-            forward * (roadCheckDistance * 0.5f);
+        Vector3 checkCenter =
+            position +
+            forward *
+            (roadCheckDistance * 0.5f);
 
-        // 地面の高さに合わせる
-        checkCenter.y = GetGroundY(checkCenter) + 3f;
+        checkCenter.y =
+            GetGroundY(checkCenter) + 3f;
 
         Vector3 checkSize;
 
@@ -562,7 +714,8 @@ public class JumpingPlatformGenerator : MonoBehaviour
             checkSize
         );
 
-        foreach (Transform building in buildingsRoot)
+        foreach (Transform building
+                 in buildingsRoot)
         {
             Collider collider =
                 building.GetComponent<Collider>();
@@ -570,15 +723,22 @@ public class JumpingPlatformGenerator : MonoBehaviour
             if (collider == null)
                 continue;
 
-            if (roadBounds.Intersects(collider.bounds))
+            if (roadBounds.Intersects(
+                collider.bounds))
+            {
                 return false;
+            }
         }
 
         return true;
     }
 
-    // 既存のジャンプ台との距離判定
-    private bool CanPlacePair(Vector3 position)
+    // ================================================
+    // 他のジャンプ台との距離
+    // ================================================
+
+    private bool CanPlacePair(
+        Vector3 position)
     {
         foreach (Transform child in transform)
         {
@@ -588,14 +748,20 @@ public class JumpingPlatformGenerator : MonoBehaviour
             a.y = 0f;
             b.y = 0f;
 
-            if (Vector3.Distance(a, b) < minDistance)
+            if (Vector3.Distance(a, b) <
+                minDistance)
+            {
                 return false;
+            }
         }
 
         return true;
     }
 
-    // ジャンプ台の生成
+    // ================================================
+    // ジャンプ台を実際に生成する
+    // ================================================
+
     private void CreatePlatform(
         Vector3 position,
         float yRotation,
@@ -617,13 +783,43 @@ public class JumpingPlatformGenerator : MonoBehaviour
         );
 
         platform.name = objectName;
+
+        // Prefab内のRendererを取得
+        Renderer[] renderers =
+            platform.GetComponentsInChildren<Renderer>();
+
+        if (renderers.Length == 0)
+            return;
+
+        Bounds bounds = renderers[0].bounds;
+
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(renderers[i].bounds);
+        }
+
+        // 見た目の一番下がGroundに接するように調整
+        float groundHeight = GetGroundY(position);
+
+        float adjustment =
+            groundHeight -
+            bounds.min.y +
+            rampGroundOffset;
+
+        platform.transform.position +=
+            Vector3.up * adjustment;
     }
 
-    // ジャンプ台を削除
+    // ================================================
+    // 全ジャンプ台を削除
+    // ================================================
+
     [ContextMenu("Clear Jumping Platforms")]
     public void ClearJumpingPlatforms()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
+        for (int i = transform.childCount - 1;
+             i >= 0;
+             i--)
         {
             GameObject child =
                 transform.GetChild(i).gameObject;
@@ -639,7 +835,10 @@ public class JumpingPlatformGenerator : MonoBehaviour
         }
     }
 
-    // 中央縦道路の候補
+    // ================================================
+    // 中央縦道路候補
+    // ================================================
+
     private Vector3 GetCenterVerticalRoadPosition(
         float minZ,
         float maxZ)
@@ -656,7 +855,10 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return new Vector3(x, yPosition, z);
     }
 
-    // 中央横道路の候補
+    // ================================================
+    // 中央横道路候補
+    // ================================================
+
     private Vector3 GetCenterHorizontalRoadPosition(
         float minX,
         float maxX)
@@ -673,8 +875,12 @@ public class JumpingPlatformGenerator : MonoBehaviour
         return new Vector3(x, yPosition, z);
     }
 
-    // 0に最も近い座標を取得
-    private float GetClosestToZero(List<float> values)
+    // ================================================
+    // 0に最も近い道路座標
+    // ================================================
+
+    private float GetClosestToZero(
+        List<float> values)
     {
         float closest = values[0];
         float closestDistance = Mathf.Abs(closest);
