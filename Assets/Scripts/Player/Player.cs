@@ -118,6 +118,9 @@ public class Player : MonoBehaviour {
 	[SerializeField]
 	private UIDocument airUI;
 
+	[SerializeField]
+	private CameraShake cameraShake;
+
 	// épê®Çï‚ê≥Ç∑ÇÈÇ©
 	public bool isCorrectingRotation = false;
 
@@ -659,6 +662,8 @@ public class Player : MonoBehaviour {
 		stanTimer = 0;
 
 		currentSpeed = 0;
+
+		cameraShake.Shake(_stanTime, 0.3f);
 
 		Debug.Log("ÉXÉ^ÉìÇµÇ‹ÇµÇΩ");
 	}
