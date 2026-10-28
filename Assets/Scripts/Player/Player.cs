@@ -127,6 +127,12 @@ public class Player : MonoBehaviour {
 	// private 
 	private Rigidbody rb;
 
+	// トリックアクションをした際に最低限のプラス値
+	private int defaultTrickAddCount = 1;
+
+	// 加速度倍率
+	private float accelerationRaito = 1.3f;
+
 	// 現在のスピード
 	private float currentSpeed = 0;
 
@@ -158,7 +164,6 @@ public class Player : MonoBehaviour {
 
 	// 最後に入力されたフレーム
 	private int lastInputFrame = -1;
-
 
 	// 反転待ちの方向
 	private int waitingDirection = 0;
@@ -238,6 +243,8 @@ public class Player : MonoBehaviour {
 		// UIに情報を渡す
 		boostUI.SetValue(rb.linearVelocity.magnitude);
 		boostUI.SetHighValue(maxMoveSpeed);
+
+		information.UpdateBuff(this);
 
 		if (groundUI != null && airUI != null) {
 			if (isGrounded) {
@@ -331,7 +338,7 @@ public class Player : MonoBehaviour {
 				trickFinishFrameCount = 0;
 				isFinishTrick = false;
 
-				information.TrickViewer(isSuccess, trickCountX + 1, trickCountY + 1);
+				information.TrickViewer(isSuccess, trickCountX + defaultTrickAddCount, trickCountY + defaultTrickAddCount);
 				isTrickPlaying = false;
 
 				// 失敗したなら失敗アニメーションを再生する
@@ -377,7 +384,7 @@ public class Player : MonoBehaviour {
 		if (isGrounded) {
 			if (vertical == 1) {
 				// 徐々に加速する
-				currentSpeed += acceleration * Time.fixedDeltaTime;
+				currentSpeed += acceleration * accelerationRaito * Time.fixedDeltaTime;
 
 				// 上限を超えたら徐々に減速するようにする
 				if (currentSpeed > maxMoveSpeed) {
@@ -666,5 +673,20 @@ public class Player : MonoBehaviour {
 		cameraShake.Shake(_stanTime, 0.3f);
 
 		Debug.Log("スタンしました");
+	}
+
+	// ------------------------------------------------------------------------------------------------
+	// accessor
+
+	public void SetStanTime(float value) {
+		stanTime = value;
+	}
+
+	public void SetAccelerationRaito(float value) {
+		accelerationRaito = value;
+	}
+
+	public void SetDefaultTrickAddCount(int value) {
+		defaultTrickAddCount = value;
 	}
 }

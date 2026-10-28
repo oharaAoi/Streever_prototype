@@ -38,7 +38,7 @@ public class GameTimeUI : MonoBehaviour
     void Update()
     {
 		if (gameTimeText != null) {
-			gameTimeText.text = $"{gameManager.GetGameTime() - Time.time:0}";
+			gameTimeText.text = $"{gameManager.GetGameTime():0}";
 		}
 	}
 }

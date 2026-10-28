@@ -10,23 +10,27 @@ public class GameManager : MonoBehaviour
 
     private bool isClear = false;
 
+    private float elapsedTime = 0;
+
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
     {
 		isClear = false;
+		elapsedTime = 0;
 	}
 
     // Update is called once per frame
     void Update()
     {
-		if (gameTime < Time.time && !isClear) {
+		elapsedTime += Time.deltaTime; 
+		if (gameTime < elapsedTime && !isClear) {
             isClear = true;
             ChangeScene();
 		}
     }
 
-    public int GetGameTime() {
-        return gameTime;
+    public float GetGameTime() {
+        return gameTime - elapsedTime;
     }
 
     [SerializeField]

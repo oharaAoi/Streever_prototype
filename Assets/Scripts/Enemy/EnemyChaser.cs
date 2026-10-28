@@ -100,21 +100,21 @@ public class EnemyChaser : MonoBehaviour
         }
 
         // 追跡者のUIマーカーを生成
-        if (markerPrefab != null &&
-            canvasRect != null &&
-            targetCamera != null)
-        {
-            marker = Instantiate(
-                markerPrefab,
-                canvasRect
-            );
+        //if (markerPrefab != null &&
+        //    canvasRect != null &&
+        //    targetCamera != null)
+        //{
+        //    marker = Instantiate(
+        //        markerPrefab,
+        //        canvasRect
+        //    );
 
-            marker.Initialize(
-                transform,
-                targetCamera,
-                canvasRect
-            );
-        }
+        //    marker.Initialize(
+        //        transform,
+        //        targetCamera,
+        //        canvasRect
+        //    );
+        //}
 
         // 最初の経路設定を遅らせない
         updateTimer = updateInterval;
@@ -123,7 +123,7 @@ public class EnemyChaser : MonoBehaviour
     private void Update()
     {
         // UIマーカー更新
-        UpdateMarkerScale();
+        //UpdateMarkerScale();
 
         if (player == null ||
             agent == null ||

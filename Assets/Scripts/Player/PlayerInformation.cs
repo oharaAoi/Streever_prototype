@@ -7,6 +7,9 @@ public class PlayerInformation : MonoBehaviour
 	[SerializeField]
 	private ViewerShipUI viewerShipUI;
 
+	[SerializeField]
+	private int[] buffViewerShip;
+
     // Ž‹’®ŽÒ”
     public int viewership = 0;
 
@@ -32,9 +35,7 @@ public class PlayerInformation : MonoBehaviour
     public void TrickViewer(bool isSuccess, int countX, int countY) {
         if (isSuccess) {
 			viewership += trickIncreaseViewership * (countX * countY);
-		} else {
-			viewership -= trickIncreaseViewership * (countX * countY);
-		}
+		} 
 
 		viewership = Mathf.Max(viewership, 0);
 	}
@@ -53,5 +54,16 @@ public class PlayerInformation : MonoBehaviour
 
 		prevViewership = viewership;
 		return false;
-	} 
+	}
+
+	public void UpdateBuff(Player player) {
+		if(viewership > buffViewerShip[2]) {
+			player.SetDefaultTrickAddCount(2);
+		} else if(viewership > buffViewerShip[1]) {
+			player.SetStanTime(0.5f);
+		} else if (viewership > buffViewerShip[0]) {
+			player.SetAccelerationRaito(1.3f);
+		}
+	}
+
 }
