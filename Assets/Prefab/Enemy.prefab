@@ -197,15 +197,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyChaser
   player: {fileID: 0}
-  chaseSpeed: 40
-  chaseDistance: 10000
+  chaseSpeed: 70
+  chaseDistance: 500
   stopDistance: 2
-  updateInterval: 0.1
+  updateInterval: 0.01
+  resumeMargin: 0.75
+  destinationThreshold: 1
   searchRadius: 5
   markerPrefab: {fileID: 8909337174361412416, guid: 9301dc2c57caa904997dd1147a426a48, type: 3}
   canvasRect: {fileID: 0}
   targetCamera: {fileID: 0}
   showDebugPath: 1
+  chaseRestartDelay: 5
+  patrolStartDelay: 3
+  patrolRadius: 300
+  patrolMinDistance: 150
+  patrolSpeed: 55
+  patrolArrivalDistance: 1
 --- !u!65 &6058549734267889592
 BoxCollider:
   m_ObjectHideFlags: 0

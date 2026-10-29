@@ -48,6 +48,19 @@ public class EnemyChaser : MonoBehaviour
 
     private NavMeshPath reusablePath;
 
+    [Header("追跡・巡回の切り替え")]
+    [SerializeField, Min(0f)] private float chaseRestartDelay = 5f;
+    [SerializeField, Min(0f)] private float patrolStartDelay = 3f;
+    [SerializeField, Min(0.1f)] private float patrolRadius = 30f;
+    [Tooltip("巡回先までの最低直線距離。Patrol Radiusはこの値以上で使用されます。")]
+    [SerializeField, Min(0f)] private float patrolMinDistance = 10f;
+    [SerializeField, Min(0.1f)] private float patrolSpeed = 6f;
+    [SerializeField, Min(0.1f)] private float patrolArrivalDistance = 1f;
+
+    private bool isChasing;
+    private float nonChaseTimer;
+    private float outsideRangeTimer;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -99,22 +112,8 @@ public class EnemyChaser : MonoBehaviour
             );
         }
 
-        // 追跡者のUIマーカーを生成
-        //if (markerPrefab != null &&
-        //    canvasRect != null &&
-        //    targetCamera != null)
-        //{
-        //    marker = Instantiate(
-        //        markerPrefab,
-        //        canvasRect
-        //    );
-
-        //    marker.Initialize(
-        //        transform,
-        //        targetCamera,
-        //        canvasRect
-        //    );
-        //}
+        agent.speed = patrolSpeed;
+        agent.stoppingDistance = patrolArrivalDistance;
 
         // 最初の経路設定を遅らせない
         updateTimer = updateInterval;
@@ -122,9 +121,6 @@ public class EnemyChaser : MonoBehaviour
 
     private void Update()
     {
-        // UIマーカー更新
-        //UpdateMarkerScale();
-
         if (player == null ||
             agent == null ||
             !agent.isOnNavMesh)
@@ -132,18 +128,98 @@ public class EnemyChaser : MonoBehaviour
             return;
         }
 
-        updateTimer += Time.deltaTime;
+        float distance = Vector3.Distance(transform.position, player.position);
+        if (isChasing)
+        {
+            outsideRangeTimer = distance >= chaseDistance
+                ? outsideRangeTimer + Time.deltaTime : 0f;
+            if (distance >= chaseDistance && outsideRangeTimer >= patrolStartDelay)
+            {
+                SetChasing(false);
+            }
+        }
+        else
+        {
+            nonChaseTimer += Time.deltaTime;
+            if (distance <= chaseDistance || nonChaseTimer >= chaseRestartDelay)
+            {
+                SetChasing(true);
+            }
+        }
 
+        updateTimer += Time.deltaTime;
         if (updateTimer < updateInterval)
         {
             return;
         }
 
-        updateTimer = 0.0f;
-
-        ChasePlayer();
+        updateTimer = 0f;
+        if (isChasing)
+        {
+            ChasePlayer();
+        }
+        else
+        {
+            Patrol();
+        }
     }
 
+    private void SetChasing(bool chasing)
+    {
+        isChasing = chasing;
+        outsideRangeTimer = 0f;
+        nonChaseTimer = 0f;
+        StopChase();
+        agent.speed = chasing ? chaseSpeed : patrolSpeed;
+        agent.stoppingDistance = chasing ? stopDistance : patrolArrivalDistance;
+        updateTimer = updateInterval;
+    }
+
+    private void Patrol()
+    {
+        if (agent.pathPending)
+        {
+            return;
+        }
+
+        if (hasDestination && agent.hasPath &&
+            agent.pathStatus == NavMeshPathStatus.PathComplete &&
+            agent.remainingDistance > patrolArrivalDistance)
+        {
+            return;
+        }
+
+        // 到達可能なランダム地点へ向かい、到着後に次の地点を選ぶ。
+        for (int i = 0; i < 10; i++)
+        {
+            // 最低距離から巡回半径までの範囲で候補を選ぶ。
+            float minDistance = Mathf.Max(patrolMinDistance, patrolArrivalDistance + 0.1f);
+            float maxDistance = Mathf.Max(patrolRadius, minDistance);
+            float angle = Random.Range(0f, Mathf.PI * 2f);
+            float radius = Mathf.Sqrt(Random.Range(minDistance * minDistance, maxDistance * maxDistance));
+            Vector2 offset = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            Vector3 candidate = transform.position + new Vector3(offset.x, 0f, offset.y);
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, searchRadius, agent.areaMask) ||
+                // NavMesh補正後も水平距離が設定範囲内か確認する。
+                Vector2.Distance(new Vector2(transform.position.x, transform.position.z),
+                    new Vector2(hit.position.x, hit.position.z)) < minDistance ||
+                Vector2.Distance(new Vector2(transform.position.x, transform.position.z),
+                    new Vector2(hit.position.x, hit.position.z)) > maxDistance ||
+                !agent.CalculatePath(hit.position, reusablePath) ||
+                reusablePath.status != NavMeshPathStatus.PathComplete)
+            {
+                continue;
+            }
+
+            if (agent.SetPath(reusablePath))
+            {
+                agent.isStopped = false;
+                lastDestination = hit.position;
+                hasDestination = true;
+                return;
+            }
+        }
+    }
     private void ChasePlayer()
     {
         // 高低差を含めた距離
@@ -167,20 +243,8 @@ public class EnemyChaser : MonoBehaviour
             return;
         }
 
-        // 追跡可能距離を超えた場合
-        if (distance > chaseDistance)
-        {
-            StopChase();
-            return;
-        }
-
-        // プレイヤーの高さを含めて
-        // NavMesh上の目的地を取得
-        if (!NavMesh.SamplePosition(
-            player.position,
-            out NavMeshHit hit,
-            searchRadius,
-            agent.areaMask))
+        // プレイヤーの現在位置を追跡する。
+        if (!NavMesh.SamplePosition(player.position, out NavMeshHit hit, searchRadius, agent.areaMask))
         {
             return;
         }
@@ -242,36 +306,6 @@ public class EnemyChaser : MonoBehaviour
         agent.ResetPath();
 
         hasDestination = false;
-    }
-
-    private void UpdateMarkerScale()
-    {
-        if (marker == null || player == null)
-        {
-            return;
-        }
-
-        // プレイヤーとの距離
-        float distance = Vector3.Distance(
-            player.position,
-            transform.position
-        );
-
-        // 距離100～500を0～1に変換
-        float normalizedDistance = Mathf.InverseLerp(
-            100.0f,
-            500.0f,
-            distance
-        );
-
-        // 距離に応じてマーカーの大きさを変更
-        float scale = Mathf.Lerp(
-            1.0f,
-            0.5f,
-            normalizedDistance
-        );
-
-        marker.SetScale(Vector3.one * scale);
     }
 
     private void OnDrawGizmos()
